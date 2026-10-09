@@ -96,13 +96,13 @@ export const LearnView: React.FC = () => {
 
         {/* Minimal Progress Indicator */}
         <div className="flex items-center gap-3 self-start sm:self-auto">
-          <div className="w-32 h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+          <div className="w-32 h-1.5 bg-zinc-850 rounded-full overflow-hidden border border-zinc-800">
             <div 
-              className="h-full bg-blue-600 dark:bg-blue-500 rounded-full transition-all duration-500"
+              className="h-full bg-accent rounded-full transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
-          <span className="text-xs font-mono font-medium text-zinc-600 dark:text-zinc-400 tabular-nums">
+          <span className="text-xs font-mono font-medium text-zinc-400 tabular-nums">
             {progressPercent}%
           </span>
         </div>
@@ -118,12 +118,12 @@ export const LearnView: React.FC = () => {
             <div key={course.id} className="space-y-4">
               
               {/* Module Header (No Course A/B/C lettering, clean thematic naming) */}
-              <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-2 border-b border-zinc-100 dark:border-zinc-800/60">
+              <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-2 border-b border-zinc-800">
                 <div className="flex items-center gap-2.5">
-                  <span className="text-xs font-mono font-semibold text-blue-600 dark:text-blue-400">
+                  <span className="text-xs font-mono font-semibold text-accent">
                     {courseIndex + 1 < 10 ? `0${courseIndex + 1}` : courseIndex + 1}
                   </span>
-                  <h2 className="text-lg sm:text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                  <h2 className="text-lg sm:text-xl font-semibold text-zinc-100">
                     {course.title}
                   </h2>
                   <span className="text-xs text-zinc-400 hidden sm:inline">
@@ -134,7 +134,7 @@ export const LearnView: React.FC = () => {
                 <div className="flex items-center gap-3 text-xs text-zinc-400 font-mono">
                   <span>{course.targetKeysSummary}</span>
                   {isCourseFinished && (
-                    <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-sans font-medium">
+                    <span className="flex items-center gap-1 text-emerald-400 font-sans font-medium">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       Completed
                     </span>
@@ -143,7 +143,7 @@ export const LearnView: React.FC = () => {
               </div>
 
               {/* Linear Practice List with Subtle Row Borders */}
-              <div className="divide-y divide-zinc-200/60 dark:divide-zinc-800/60 border-y border-zinc-200/60 dark:border-zinc-800/60">
+              <div className="divide-y divide-zinc-800/80 border-y border-zinc-800/80">
                 {course.lessons.map((lesson, lessonIdx) => {
                   const state = lessonStateMap[lesson.id] || 'locked';
                   const prog = lessonProgress[lesson.id];
@@ -161,9 +161,9 @@ export const LearnView: React.FC = () => {
                       }}
                       className={`group flex items-center justify-between py-3.5 sm:py-4 px-2 sm:px-3 transition-colors ${
                         isCompleted
-                          ? 'hover:bg-zinc-50/70 dark:hover:bg-zinc-850/40 cursor-pointer'
+                          ? 'hover:bg-zinc-900/60 cursor-pointer'
                           : isAvailable
-                            ? 'hover:bg-blue-50/30 dark:hover:bg-blue-950/20 cursor-pointer'
+                            ? 'hover:bg-zinc-900/80 cursor-pointer'
                             : 'opacity-40 cursor-not-allowed select-none'
                       }`}
                     >
@@ -171,11 +171,11 @@ export const LearnView: React.FC = () => {
                         {/* State Indicator */}
                         <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0">
                           {isCompleted ? (
-                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                           ) : isLocked ? (
-                            <Lock className="w-3.5 h-3.5 text-zinc-400" />
+                            <Lock className="w-3.5 h-3.5 text-zinc-500" />
                           ) : (
-                            <Play className="w-3.5 h-3.5 text-blue-500 fill-blue-500" />
+                            <Play className="w-3.5 h-3.5 text-accent fill-accent" />
                           )}
                         </div>
 
@@ -184,7 +184,7 @@ export const LearnView: React.FC = () => {
                             <span className="text-xs font-mono text-zinc-400">
                               {lessonIdx + 1 < 10 ? `0${lessonIdx + 1}` : lessonIdx + 1}
                             </span>
-                            <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                            <h3 className="text-sm font-medium text-zinc-100 group-hover:text-accent transition-colors truncate">
                               {lesson.title}
                             </h3>
                             {prog?.stars ? (
@@ -193,14 +193,14 @@ export const LearnView: React.FC = () => {
                                   <Star
                                     key={s}
                                     className={`w-2.5 h-2.5 ${
-                                      s <= prog.stars ? 'text-amber-400 fill-amber-400' : 'text-zinc-300 dark:text-zinc-700'
+                                      s <= prog.stars ? 'text-amber-400 fill-amber-400' : 'text-zinc-700'
                                     }`}
                                   />
                                 ))}
                               </div>
                             ) : null}
                           </div>
-                          <p className="text-xs text-zinc-500 truncate mt-0.5 max-w-lg">
+                          <p className="text-xs text-zinc-400 truncate mt-0.5 max-w-lg">
                             {lesson.fingerTips}
                           </p>
                         </div>
@@ -209,10 +209,10 @@ export const LearnView: React.FC = () => {
                       {/* Performance / Practice Action */}
                       <div className="flex items-center gap-3 shrink-0">
                         {isCompleted && prog && (
-                          <div className="text-right text-xs tabular-nums text-zinc-500 hidden sm:block font-mono">
-                            <span className="font-semibold text-zinc-800 dark:text-zinc-200">{prog.bestWpm} WPM</span>
-                            <span className="text-zinc-400 mx-1">·</span>
-                            <span className="text-emerald-600 dark:text-emerald-400">{prog.bestAccuracy}%</span>
+                          <div className="text-right text-xs tabular-nums text-zinc-400 hidden sm:block font-mono">
+                            <span className="font-semibold text-zinc-200">{prog.bestWpm} WPM</span>
+                            <span className="text-zinc-500 mx-1">·</span>
+                            <span className="text-emerald-400">{prog.bestAccuracy}%</span>
                           </div>
                         )}
 
@@ -222,7 +222,7 @@ export const LearnView: React.FC = () => {
                               e.stopPropagation();
                               handleLaunchPractice(lesson, 'practice');
                             }}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-500 transition-colors shadow-2xs cursor-pointer"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-accent text-white hover:opacity-90 transition-all shadow-xs cursor-pointer"
                           >
                             <span>Practice</span>
                             <ChevronRight className="w-3.5 h-3.5" />

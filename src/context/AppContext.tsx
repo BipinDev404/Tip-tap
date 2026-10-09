@@ -56,59 +56,51 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     saveUserData(data);
   }, [data]);
 
-  // Apply Theme to document
+  // Enforce dark mode as the default and permanent state
   useEffect(() => {
     const root = document.documentElement;
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    root.classList.add('dark');
+  }, []);
 
-    const applyTheme = () => {
-      let isDark = false;
-      if (data.settings.theme === 'dark') {
-        isDark = true;
-      } else if (data.settings.theme === 'light') {
-        isDark = false;
-      } else {
-        isDark = media.matches;
-      }
-
-      if (isDark) {
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-      }
-    };
-
-    applyTheme();
-    media.addEventListener('change', applyTheme);
-    return () => media.removeEventListener('change', applyTheme);
-  }, [data.settings.theme]);
-
-  // Apply Accent & Font variables
+  // Apply Accent, Font variables, and Motion settings
   useEffect(() => {
     const root = document.documentElement;
+    const body = document.body;
+
     const accentColors: Record<AccentColor, { light: string; dark: string; lightRgb: string }> = {
-      blue: { light: '#0071e3', dark: '#0a84ff', lightRgb: '0, 113, 227' },
-      emerald: { light: '#059669', dark: '#34d399', lightRgb: '5, 150, 105' },
-      orange: { light: '#ea580c', dark: '#fb923c', lightRgb: '234, 88, 12' },
-      purple: { light: '#7c3aed', dark: '#a78bfa', lightRgb: '124, 58, 237' },
-      rose: { light: '#e11d48', dark: '#fb7185', lightRgb: '225, 29, 72' },
-      graphite: { light: '#3f3f46', dark: '#d4d4d8', lightRgb: '63, 63, 70' }
+      blue: { light: '#3b82f6', dark: '#60a5fa', lightRgb: '59, 130, 246' },
+      emerald: { light: '#10b981', dark: '#34d399', lightRgb: '16, 185, 129' },
+      orange: { light: '#f59e0b', dark: '#fbbf24', lightRgb: '245, 158, 11' },
+      purple: { light: '#8b5cf6', dark: '#a78bfa', lightRgb: '139, 92, 246' },
+      rose: { light: '#f43f5e', dark: '#fb7185', lightRgb: '244, 63, 94' },
+      cyan: { light: '#06b6d4', dark: '#22d3ee', lightRgb: '6, 182, 212' },
+      graphite: { light: '#71717a', dark: '#e4e4e7', lightRgb: '161, 161, 170' }
     };
 
     const currentAccent = accentColors[data.settings.accent] || accentColors.blue;
     root.style.setProperty('--accent-light', currentAccent.light);
     root.style.setProperty('--accent-dark', currentAccent.dark);
+    root.style.setProperty('--accent-color', currentAccent.dark);
     root.style.setProperty('--accent-rgb', currentAccent.lightRgb);
 
     // Font family class
     const fontFamilies: Record<string, string> = {
       system: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+      inter: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       dm: '"DM Sans", -apple-system, BlinkMacSystemFont, sans-serif',
       mono: '"JetBrains Mono", Menlo, Monaco, Consolas, monospace',
+      fira: '"Fira Code", "JetBrains Mono", monospace',
       serif: '"Newsreader", Georgia, Cambria, serif'
     };
     root.style.setProperty('--font-custom', fontFamilies[data.settings.fontFamily] || fontFamilies.system);
-  }, [data.settings.accent, data.settings.fontFamily]);
+
+    // Apply reduced motion to body
+    if (data.settings.reducedMotion) {
+      body.classList.add('reduce-motion');
+    } else {
+      body.classList.remove('reduce-motion');
+    }
+  }, [data.settings.accent, data.settings.fontFamily, data.settings.reducedMotion]);
 
   const updateSettings = (partial: Partial<UserSettings>) => {
     setData(prev => ({

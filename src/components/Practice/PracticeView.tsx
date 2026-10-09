@@ -171,7 +171,14 @@ export const PracticeView: React.FC = () => {
     const lines: number[][] = [];
     let currentLine: number[] = [];
     let lastTop: number | null = null;
-    let detectedLineHeight = 58;
+    const baseLineHeightMap: Record<string, number> = {
+      sm: 44,
+      md: 52,
+      lg: 60,
+      xl: 72
+    };
+    const minLineHeight = baseLineHeightMap[settings.fontSize] || 60;
+    let detectedLineHeight = minLineHeight;
 
     probeEls.forEach((el, idx) => {
       const top = el.offsetTop;
@@ -181,7 +188,7 @@ export const PracticeView: React.FC = () => {
       } else if (top > lastTop + 6) {
         lines.push(currentLine);
         if (lines.length === 1) {
-          detectedLineHeight = Math.max(48, Math.round(top - lastTop));
+          detectedLineHeight = Math.max(minLineHeight, Math.round(top - lastTop));
         }
         lastTop = top;
         currentLine = [idx];
@@ -195,12 +202,12 @@ export const PracticeView: React.FC = () => {
     }
 
     if (lines.length === 1 && probeEls[0]) {
-      detectedLineHeight = Math.max(48, Math.round(probeEls[0].offsetHeight * 1.35));
+      detectedLineHeight = Math.max(minLineHeight, Math.round(probeEls[0].offsetHeight * 1.35));
     }
 
     setLineWordIndices(lines);
     setLineHeightPx(detectedLineHeight);
-  }, []);
+  }, [settings.fontSize]);
 
   // Measure whenever target text, font size, font family, or session changes
   useEffect(() => {
@@ -455,20 +462,20 @@ export const PracticeView: React.FC = () => {
   // Expected next character for Virtual Keyboard highlight
   const currentExpectedChar = targetText[typedText.length] || '';
 
-  // Caret Styles Mapping - Shifted slightly down to align with character cap height and baseline
+  // Caret Styles Mapping - Dynamically uses the user-selected accent color
   const caretClasses = useMemo(() => {
     switch (settings.caretStyle) {
       case 'block':
-        return 'w-full left-0 top-[24%] h-[64%] bg-blue-500/30 dark:bg-blue-400/30 rounded-xs animate-caret-pulse';
+        return 'inset-0 -mx-[2px] bg-accent/85 rounded-xs animate-caret-pulse z-0 pointer-events-none shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]';
       case 'underline':
-        return 'w-full left-0 bottom-[6%] h-[3px] bg-blue-500 dark:bg-blue-400 rounded-full animate-caret-blink';
+        return 'left-0 right-0 -bottom-[1px] h-[3.5px] bg-accent rounded-full animate-caret-blink shadow-[0_0_8px_var(--accent-color)] z-10 pointer-events-none';
       case 'pulse':
-        return 'w-[2.5px] -left-[1.5px] top-[24%] h-[64%] bg-blue-600 dark:bg-blue-400 rounded-full animate-caret-pulse';
+        return 'w-[3px] -left-[2px] top-[10%] h-[80%] bg-accent rounded-full animate-caret-pulse shadow-[0_0_14px_var(--accent-color)] z-10 pointer-events-none';
       case 'line':
-        return 'w-[1.5px] -left-[1px] top-[24%] h-[64%] bg-blue-600 dark:bg-blue-400 rounded-full animate-caret-blink';
+        return 'w-[1.5px] -left-[1px] top-[10%] h-[80%] bg-accent animate-caret-blink shadow-[0_0_4px_var(--accent-color)] z-10 pointer-events-none';
       case 'bar':
       default:
-        return 'w-[2.5px] -left-[1.5px] top-[24%] h-[64%] bg-blue-600 dark:bg-blue-400 rounded-full animate-caret-blink';
+        return 'w-[2.5px] -left-[1.5px] top-[10%] h-[80%] bg-accent rounded-full animate-caret-blink shadow-[0_0_8px_var(--accent-color)] z-10 pointer-events-none';
     }
   }, [settings.caretStyle]);
 
@@ -626,7 +633,7 @@ export const PracticeView: React.FC = () => {
       ) : (
         <>
           {/* Mode Selector and Controls Deck */}
-          <div className={`w-full max-w-4xl flex flex-wrap items-center justify-between gap-3 mb-4 p-2.5 rounded-2xl bg-zinc-200/50 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 transition-all duration-300 ${
+          <div className={`w-full max-w-4xl flex flex-wrap items-center justify-between gap-3 mb-4 p-2.5 rounded-2xl bg-zinc-950/90 border border-zinc-800/90 transition-all duration-300 shadow-md ${
             settings.focusMode && isTestActive
               ? 'opacity-0 pointer-events-none max-h-0 py-0 mb-0 overflow-hidden border-transparent'
               : isTestActive ? 'opacity-35 hover:opacity-100' : 'opacity-100'
@@ -638,11 +645,11 @@ export const PracticeView: React.FC = () => {
                 onClick={() => { setMode('time'); setPracticeTargetWords(null); }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                   mode === 'time' && !practiceTargetWords
-                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                    ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
                 }`}
               >
-                <Clock className="w-3.5 h-3.5" />
+                <Clock className={`w-3.5 h-3.5 ${mode === 'time' && !practiceTargetWords ? 'text-accent' : ''}`} />
                 <span>Time</span>
               </button>
 
@@ -650,11 +657,11 @@ export const PracticeView: React.FC = () => {
                 onClick={() => { setMode('words'); setPracticeTargetWords(null); }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                   mode === 'words' && !practiceTargetWords
-                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                    ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
                 }`}
               >
-                <FileText className="w-3.5 h-3.5" />
+                <FileText className={`w-3.5 h-3.5 ${mode === 'words' && !practiceTargetWords ? 'text-accent' : ''}`} />
                 <span>Words</span>
               </button>
 
@@ -662,11 +669,11 @@ export const PracticeView: React.FC = () => {
                 onClick={() => { setMode('quote'); setPracticeTargetWords(null); }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                   mode === 'quote' && !practiceTargetWords
-                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                    ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
                 }`}
               >
-                <QuoteIcon className="w-3.5 h-3.5" />
+                <QuoteIcon className={`w-3.5 h-3.5 ${mode === 'quote' && !practiceTargetWords ? 'text-accent' : ''}`} />
                 <span>Quote</span>
               </button>
 
@@ -677,11 +684,11 @@ export const PracticeView: React.FC = () => {
                 }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                   mode === 'custom' || practiceTargetWords
-                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                    ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
                 }`}
               >
-                <Edit3 className="w-3.5 h-3.5" />
+                <Edit3 className={`w-3.5 h-3.5 ${mode === 'custom' || practiceTargetWords ? 'text-accent' : ''}`} />
                 <span>Custom</span>
               </button>
             </div>
@@ -689,15 +696,15 @@ export const PracticeView: React.FC = () => {
             {/* Mode-Specific Sub-Options */}
             <div className="flex items-center gap-2">
               {mode === 'time' && !practiceTargetWords && (
-                <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800/80 p-0.5 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60">
+                <div className="flex items-center gap-1 bg-zinc-900 p-0.5 rounded-xl border border-zinc-800">
                   {([15, 30, 60, 120] as TimeOption[]).map(t => (
                     <button
                       key={t}
                       onClick={() => setTimeOption(t)}
-                      className={`px-2 py-0.5 text-xs font-medium rounded-md transition-colors tabular-nums cursor-pointer ${
+                      className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-colors tabular-nums cursor-pointer ${
                         timeOption === t
-                          ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-2xs font-semibold'
-                          : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
+                          ? 'bg-zinc-800 text-accent border border-zinc-700 font-bold shadow-xs'
+                          : 'text-zinc-400 hover:text-zinc-200'
                       }`}
                     >
                       {t}s
@@ -707,15 +714,15 @@ export const PracticeView: React.FC = () => {
               )}
 
               {mode === 'words' && !practiceTargetWords && (
-                <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800/80 p-0.5 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60">
+                <div className="flex items-center gap-1 bg-zinc-900 p-0.5 rounded-xl border border-zinc-800">
                   {([10, 25, 50, 100] as WordsOption[]).map(w => (
                     <button
                       key={w}
                       onClick={() => setWordsOption(w)}
-                      className={`px-2 py-0.5 text-xs font-medium rounded-md transition-colors tabular-nums cursor-pointer ${
+                      className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-colors tabular-nums cursor-pointer ${
                         wordsOption === w
-                          ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-2xs font-semibold'
-                          : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
+                          ? 'bg-zinc-800 text-accent border border-zinc-700 font-bold shadow-xs'
+                          : 'text-zinc-400 hover:text-zinc-200'
                       }`}
                     >
                       {w}
@@ -725,15 +732,15 @@ export const PracticeView: React.FC = () => {
               )}
 
               {mode === 'quote' && !practiceTargetWords && (
-                <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800/80 p-0.5 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60">
+                <div className="flex items-center gap-1 bg-zinc-900 p-0.5 rounded-xl border border-zinc-800">
                   {(['short', 'medium', 'long'] as QuoteLength[]).map(ql => (
                     <button
                       key={ql}
                       onClick={() => setQuoteLength(ql)}
-                      className={`px-2 py-0.5 text-xs font-medium rounded-md capitalize transition-colors cursor-pointer ${
+                      className={`px-2.5 py-1 text-xs font-medium rounded-lg capitalize transition-colors cursor-pointer ${
                         quoteLength === ql
-                          ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-2xs font-semibold'
-                          : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
+                          ? 'bg-zinc-800 text-accent border border-zinc-700 font-bold shadow-xs'
+                          : 'text-zinc-400 hover:text-zinc-200'
                       }`}
                     >
                       {ql}
@@ -744,13 +751,13 @@ export const PracticeView: React.FC = () => {
 
               {/* Toggles: Punctuation and Numbers */}
               {mode !== 'quote' && !practiceTargetWords && (
-                <div className="flex items-center gap-1 border-l border-zinc-300 dark:border-zinc-700 pl-2">
+                <div className="flex items-center gap-1 border-l border-zinc-800 pl-2">
                   <button
                     onClick={() => setHasPunctuation(p => !p)}
-                    className={`px-2 py-0.5 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                    className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-all cursor-pointer ${
                       hasPunctuation
-                        ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 font-semibold'
-                        : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
+                        ? 'bg-zinc-800 text-accent border border-zinc-700 font-semibold'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
                     }`}
                     title="Toggle punctuation marks"
                   >
@@ -758,10 +765,10 @@ export const PracticeView: React.FC = () => {
                   </button>
                   <button
                     onClick={() => setHasNumbers(n => !n)}
-                    className={`px-2 py-0.5 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                    className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-all cursor-pointer ${
                       hasNumbers
-                        ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 font-semibold'
-                        : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
+                        ? 'bg-zinc-800 text-accent border border-zinc-700 font-semibold'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
                     }`}
                     title="Toggle number digits"
                   >
@@ -773,23 +780,23 @@ export const PracticeView: React.FC = () => {
               {/* Virtual Keyboard Toggle */}
               <button
                 onClick={() => updateSettings({ showVirtualKeyboard: !settings.showVirtualKeyboard })}
-                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
                   settings.showVirtualKeyboard
-                    ? 'text-blue-600 dark:text-blue-400 bg-blue-500/10'
-                    : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
+                    ? 'text-accent bg-zinc-800 border-zinc-700 shadow-xs'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border-transparent'
                 }`}
                 title="Toggle on-screen visual keyboard"
               >
-                <KeyboardIcon className="w-3.5 h-3.5" />
+                <KeyboardIcon className="w-4 h-4" />
               </button>
 
               {/* Focus Mode Toggle */}
               <button
                 onClick={() => updateSettings({ focusMode: !settings.focusMode })}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all cursor-pointer text-xs font-medium ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl transition-all cursor-pointer text-xs font-medium border ${
                   settings.focusMode
-                    ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-500/15 font-semibold ring-1 ring-indigo-500/30'
-                    : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
+                    ? 'text-accent bg-zinc-800 border-zinc-700 font-semibold shadow-xs'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border-transparent'
                 }`}
                 title={settings.focusMode ? 'Focus Mode active (hides header, footer, and stats during test)' : 'Enable Focus Mode (hides header, footer, and stats during test)'}
               >
@@ -800,10 +807,10 @@ export const PracticeView: React.FC = () => {
               {/* Ghosting Pacer Toggle */}
               <button
                 onClick={() => updateSettings({ ghostingEnabled: !settings.ghostingEnabled })}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all cursor-pointer text-xs font-medium ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl transition-all cursor-pointer text-xs font-medium border ${
                   settings.ghostingEnabled
-                    ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-500/15 font-semibold ring-1 ring-indigo-500/30'
-                    : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
+                    ? 'text-accent bg-zinc-800 border-zinc-700 font-semibold shadow-xs'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border-transparent'
                 }`}
                 title={`Ghosting Pacer: Shows previous best pace (${previousBestWpm} WPM) as translucent text layer`}
               >
@@ -859,14 +866,14 @@ export const PracticeView: React.FC = () => {
                 <>
                   <div className="flex items-center gap-1.5">
                     <span className="text-zinc-500">WPM:</span>
-                    <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                    <span className="text-sm font-extrabold text-accent">
                       {liveStats.wpm}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-1.5">
                     <span className="text-zinc-500">Acc:</span>
-                    <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                    <span className="text-sm font-bold text-emerald-400">
                       {liveStats.accuracy}%
                     </span>
                   </div>
@@ -878,11 +885,11 @@ export const PracticeView: React.FC = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => resetTest(false)}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-zinc-400 hover:text-zinc-200 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 transition-colors cursor-pointer"
                 title="Restart test (Tab then Enter)"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span className="text-[11px]">Restart</span>
+                <RotateCcw className="w-3.5 h-3.5 text-accent" />
+                <span className="text-[11px] font-medium">Restart</span>
               </button>
             </div>
           </div>
@@ -890,7 +897,7 @@ export const PracticeView: React.FC = () => {
           {/* Centered Distraction-Free Linear Typing Stage */}
           <div
             onClick={focusInput}
-            className="relative w-full max-w-4xl rounded-3xl mt-8 sm:mt-12 mb-8 sm:mb-10 py-8 sm:py-10 px-8 sm:px-12 cursor-text select-none bg-white/70 dark:bg-zinc-900/60 border border-zinc-200/70 dark:border-zinc-800/70 shadow-sm backdrop-blur-md transition-all group"
+            className="relative w-full max-w-4xl rounded-3xl mt-8 sm:mt-12 mb-8 sm:mb-10 py-8 sm:py-10 px-8 sm:px-12 cursor-text select-none bg-zinc-950/90 border border-zinc-800 shadow-2xl backdrop-blur-md transition-all group"
           >
             {/* Hidden Input for Keyboard Capture (Touch + Physical) */}
             <input
@@ -990,23 +997,25 @@ export const PracticeView: React.FC = () => {
                                 ref={isCurrent ? activeCharRef : null}
                                 className={`relative inline-block transition-colors duration-75 ${
                                   isCorrect
-                                    ? 'text-zinc-900 dark:text-zinc-100 font-medium'
+                                    ? 'text-zinc-100 font-medium'
                                     : isIncorrect
                                       ? settings.highlightErrors
-                                        ? 'text-rose-500 bg-rose-500/10 rounded-xs dark:text-rose-400 font-medium'
-                                        : 'text-rose-500 font-medium'
-                                      : 'text-zinc-400/50 dark:text-zinc-600'
+                                        ? 'text-rose-400 bg-rose-500/15 rounded-xs font-medium'
+                                        : 'text-rose-400 font-medium'
+                                      : isCurrent && settings.caretStyle === 'block'
+                                        ? 'text-zinc-950 font-bold relative z-10'
+                                        : 'text-zinc-500'
                                 }`}
                               >
                                 {/* Ghost Pacing Translucent Text Layer */}
                                 {isGhostPaced && !isTyped && (
-                                  <span className="absolute inset-0 -inset-x-0.5 bg-indigo-500/15 dark:bg-indigo-400/20 rounded-xs pointer-events-none -z-10" />
+                                  <span className="absolute inset-0 -inset-x-0.5 bg-indigo-500/15 rounded-xs pointer-events-none -z-10" />
                                 )}
 
                                 {/* Ghost Pacing Caret (Previous Best) */}
                                 {isGhostCaret && (
                                   <span 
-                                    className="absolute -left-[1px] top-[18%] h-[68%] w-[2px] bg-indigo-500/80 dark:bg-indigo-400/80 rounded-full pointer-events-none animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.6)] z-10"
+                                    className="absolute -left-[1px] top-[18%] h-[68%] w-[2px] bg-indigo-500/80 rounded-full pointer-events-none animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.6)] z-10"
                                     title={`Ghost Pacer (${previousBestWpm} WPM)`}
                                   >
                                     <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-1 py-0.2 rounded-xs bg-indigo-600 text-[8px] font-mono text-white font-bold tracking-tighter opacity-80 whitespace-nowrap shadow-xs">
@@ -1028,15 +1037,16 @@ export const PracticeView: React.FC = () => {
                           {/* Trailing space after word */}
                           {wordObj.hasSpace && (() => {
                             const isGhostSpaceCaret = settings.ghostingEnabled && isTestActive && wordObj.spaceIndex === ghostIndex;
+                            const isSpaceCurrent = wordObj.spaceIndex === typedText.length;
                             return (
                               <span
-                                ref={wordObj.spaceIndex === typedText.length ? activeCharRef : null}
+                                ref={isSpaceCurrent ? activeCharRef : null}
                                 className="relative inline-block w-[0.25em]"
                               >
                                 {/* Ghost Space Caret */}
                                 {isGhostSpaceCaret && (
                                   <span 
-                                    className="absolute -left-[1px] top-[18%] h-[68%] w-[2px] bg-indigo-500/80 dark:bg-indigo-400/80 rounded-full pointer-events-none animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.6)] z-10"
+                                    className="absolute -left-[1px] top-[18%] h-[68%] w-[2px] bg-indigo-500/80 rounded-full pointer-events-none animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.6)] z-10"
                                     title={`Ghost Pacer (${previousBestWpm} WPM)`}
                                   >
                                     <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-1 py-0.2 rounded-xs bg-indigo-600 text-[8px] font-mono text-white font-bold tracking-tighter opacity-80 whitespace-nowrap shadow-xs">
@@ -1045,8 +1055,8 @@ export const PracticeView: React.FC = () => {
                                   </span>
                                 )}
 
-                                {wordObj.spaceIndex === typedText.length && (
-                                  <span className={`absolute ${caretClasses}`} />
+                                {isSpaceCurrent && (
+                                  <span className={`absolute ${settings.caretStyle === 'block' ? 'inset-0 w-[0.55em] -left-[1px] bg-accent/85 rounded-xs animate-caret-pulse z-0 pointer-events-none shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]' : caretClasses}`} />
                                 )}
                                 &nbsp;
                               </span>

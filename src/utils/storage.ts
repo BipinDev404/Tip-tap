@@ -3,7 +3,7 @@ import { TipTapUserData, UserSettings, TestResult, LessonProgress } from '../typ
 const STORAGE_KEY = 'tiptap_data_v1';
 
 export const DEFAULT_SETTINGS: UserSettings = {
-  theme: 'system',
+  theme: 'dark',
   accent: 'blue',
   fontFamily: 'system',
   fontSize: 'lg',
@@ -11,7 +11,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   sound: 'mechanical',
   soundEnabled: true,
   errorSoundEnabled: true,
-  soundVolume: 0.35,
+  soundVolume: 0.5,
   highlightErrors: true,
   showVirtualKeyboard: true,
   reducedMotion: false,
@@ -46,7 +46,7 @@ export function loadUserData(): TipTapUserData {
     if (!raw) return INITIAL_DATA;
     const parsed = JSON.parse(raw);
     return {
-      settings: { ...DEFAULT_SETTINGS, ...(parsed.settings || {}) },
+      settings: { ...DEFAULT_SETTINGS, ...(parsed.settings || {}), theme: 'dark' },
       results: Array.isArray(parsed.results) ? parsed.results : [],
       lessonProgress: parsed.lessonProgress || {},
       customTexts: Array.isArray(parsed.customTexts) && parsed.customTexts.length > 0 ? parsed.customTexts : INITIAL_DATA.customTexts,

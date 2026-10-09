@@ -10,7 +10,7 @@ interface KeyDefinition {
   isHomeAnchor?: boolean;
 }
 
-// Real standard ANSI 60% physical keyboard layout (5 proportional rows)
+// Standard ANSI 60% physical keyboard layout (5 proportional rows)
 const KEYBOARD_ROWS: KeyDefinition[][] = [
   // Row 1: Numbers & Backspace
   [
@@ -77,7 +77,7 @@ const KEYBOARD_ROWS: KeyDefinition[][] = [
     { id: '/', label: '/', sub: '?', width: 'w-8 sm:w-10' },
     { id: 'ShiftRight', shortName: 'Shift', icon: '⇧', width: 'w-22 sm:w-26' }
   ],
-  // Row 5: Real modifier row (Ctrl, Cmd, Alt, Space, Alt, Fn, Ctrl)
+  // Row 5: Modifier row (Ctrl, Cmd, Alt, Space, Alt, Fn, Ctrl)
   [
     { id: 'Control', shortName: 'Ctrl', icon: '⌃', width: 'w-11 sm:w-13' },
     { id: 'Meta', shortName: 'Cmd', icon: '⌘', width: 'w-11 sm:w-13' },
@@ -136,8 +136,8 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
 
   return (
     <div className="w-full select-none">
-      {/* Keyboard Shell - Clean real mechanical board styling without hover response */}
-      <div className={`mx-auto p-2.5 sm:p-3.5 rounded-2xl bg-zinc-200/60 dark:bg-zinc-900/80 border border-zinc-300/60 dark:border-zinc-800/80 backdrop-blur-md shadow-xs overflow-x-auto max-w-4xl ${compact ? 'scale-90 origin-top' : ''}`}>
+      {/* Keyboard Shell - Pure black & dark-grey mechanical chassis */}
+      <div className={`mx-auto p-3 sm:p-4 rounded-2xl bg-zinc-950/90 border border-zinc-800 shadow-xl backdrop-blur-md overflow-x-auto max-w-4xl ${compact ? 'scale-90 origin-top' : ''}`}>
         <div className="min-w-[660px] flex flex-col gap-1.5 sm:gap-2">
           {KEYBOARD_ROWS.map((row, rIdx) => (
             <div key={rIdx} className="flex justify-center gap-1 sm:gap-1.5">
@@ -173,33 +173,50 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
                 return (
                   <div
                     key={k.id}
+                    style={
+                      isPressed
+                        ? {
+                            backgroundColor: 'var(--accent-color)',
+                            color: '#ffffff',
+                            borderColor: 'var(--accent-color)',
+                            boxShadow: '0 0 16px rgba(var(--accent-rgb), 0.6)'
+                          }
+                        : isExpected
+                          ? {
+                              borderColor: 'var(--accent-color)',
+                              backgroundColor: 'rgba(var(--accent-rgb), 0.18)',
+                              color: '#ffffff',
+                              boxShadow: '0 0 14px rgba(var(--accent-rgb), 0.4), inset 0 0 8px rgba(var(--accent-rgb), 0.2)'
+                            }
+                          : undefined
+                    }
                     className={`
                       relative flex flex-col items-center justify-center 
                       h-10 sm:h-12 rounded-lg sm:rounded-xl text-xs font-medium 
-                      transition-transform duration-75 select-none cursor-default
+                      transition-all duration-75 select-none cursor-default
                       ${k.width || 'w-8 sm:w-10'}
                       ${isPressed 
-                        ? 'bg-blue-600 text-white shadow-none translate-y-[2px] ring-2 ring-blue-400/50' 
+                        ? 'translate-y-[2px] font-bold ring-2 ring-white/40' 
                         : isExpected 
-                          ? 'bg-blue-50/90 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-2 border-blue-500 shadow-sm font-semibold ring-2 ring-blue-500/20' 
-                          : 'bg-white dark:bg-zinc-800/90 border border-zinc-200 dark:border-zinc-700/70 text-zinc-700 dark:text-zinc-200 shadow-[0_2px_0_rgba(0,0,0,0.05)] dark:shadow-[0_2px_0_rgba(0,0,0,0.4)]'
+                          ? 'border-2 font-bold ring-1 ring-white/20' 
+                          : 'bg-zinc-900 border border-zinc-800 text-zinc-300 shadow-[0_2px_0_rgba(0,0,0,0.6)]'
                       }
                     `}
                   >
                     {/* Shifted secondary character on top */}
                     {k.sub && (
-                      <span className="text-[9px] sm:text-[10px] text-zinc-400 dark:text-zinc-500 leading-none mb-0.5">
+                      <span className={`text-[9px] sm:text-[10px] leading-none mb-0.5 ${isExpected ? 'text-white/80' : 'text-zinc-500'}`}>
                         {k.sub}
                       </span>
                     )}
 
                     {/* Primary label or Modifier icon & short name */}
                     {k.label ? (
-                      <span className="leading-none text-[11px] sm:text-xs">
+                      <span className={`leading-none text-[11px] sm:text-xs ${isExpected ? 'text-white' : ''}`}>
                         {k.label}
                       </span>
                     ) : (
-                      <div className="flex items-center gap-1 leading-none text-zinc-600 dark:text-zinc-300">
+                      <div className={`flex items-center gap-1 leading-none ${isPressed || isExpected ? 'text-white' : 'text-zinc-400'}`}>
                         {k.icon && (
                           <span className="text-[11px] sm:text-xs font-semibold opacity-90">
                             {k.icon}
@@ -215,7 +232,12 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
 
                     {/* F & J physical tactile homing bumps */}
                     {k.isHomeAnchor && (
-                      <span className="absolute bottom-1 w-2.5 h-0.5 rounded-full bg-zinc-400/80 dark:bg-zinc-500" />
+                      <span 
+                        className="absolute bottom-1 w-2.5 h-0.5 rounded-full"
+                        style={{
+                          backgroundColor: isExpected || isPressed ? '#ffffff' : 'rgba(var(--accent-rgb), 0.7)'
+                        }}
+                      />
                     )}
                   </div>
                 );

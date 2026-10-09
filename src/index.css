@@ -3,6 +3,15 @@
 @layer base {
   :root {
     --font-apple: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-custom: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --accent-light: #3b82f6;
+    --accent-dark: #60a5fa;
+    --accent-color: #60a5fa;
+    --accent-rgb: 96, 165, 250;
+  }
+
+  .dark {
+    --accent-color: #60a5fa;
   }
 
   body {
@@ -10,25 +19,116 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     touch-action: manipulation;
+    background-color: #09090b;
+    color: #f4f4f5;
   }
 }
 
+/* Dynamic Accent Utilities */
+.text-accent {
+  color: var(--accent-color) !important;
+}
+
+.bg-accent {
+  background-color: var(--accent-color) !important;
+}
+
+.border-accent {
+  border-color: var(--accent-color) !important;
+}
+
+.ring-accent {
+  --tw-ring-color: var(--accent-color) !important;
+}
+
+.accent-tint {
+  background-color: rgba(var(--accent-rgb), 0.16) !important;
+  color: var(--accent-color) !important;
+}
+
+.accent-glow {
+  box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.45) !important;
+}
+
+.accent-glow-subtle {
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.25) !important;
+}
+
+/* Caret Cursor Animations */
 @keyframes cursorBlink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
 
 @keyframes cursorPulse {
-  0%, 100% { opacity: 1; transform: scaleY(1); }
-  50% { opacity: 0.4; transform: scaleY(0.85); }
+  0%, 100% { 
+    opacity: 1;
+    filter: drop-shadow(0 0 8px var(--accent-color));
+  }
+  50% { 
+    opacity: 0.35;
+    filter: drop-shadow(0 0 2px var(--accent-color));
+  }
 }
 
 .animate-caret-blink {
-  animation: cursorBlink 1s ease-in-out infinite;
+  animation: cursorBlink 0.95s ease-in-out infinite;
 }
 
 .animate-caret-pulse {
-  animation: cursorPulse 1.2s ease-in-out infinite;
+  animation: cursorPulse 1.1s ease-in-out infinite;
+}
+
+/* Custom Range Slider */
+input[type="range"].accent-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 9999px;
+  background: #27272a;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+input[type="range"].accent-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.5);
+  border: 2px solid #09090b;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="range"].accent-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.18);
+  box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.7);
+}
+
+input[type="range"].accent-slider::-webkit-slider-thumb:active {
+  transform: scale(1.28);
+}
+
+input[type="range"].accent-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.5);
+  border: 2px solid #09090b;
+  transition: transform 0.15s ease;
+}
+
+/* Reduced motion preference override */
+body.reduce-motion *,
+.reduce-motion * {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
 }
 
 /* Subtle, smooth entry animation for typing area without layout shifts */
@@ -67,11 +167,10 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(150, 150, 150, 0.25);
+  background: rgba(100, 100, 100, 0.25);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(150, 150, 150, 0.45);
+  background: rgba(120, 120, 120, 0.45);
 }
-

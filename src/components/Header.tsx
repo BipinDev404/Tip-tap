@@ -1,8 +1,6 @@
 import React from 'react';
 import { useApp, NavigationTab } from '../context/AppContext';
 import { 
-  Sun, 
-  Moon, 
   Volume2, 
   VolumeX, 
   HelpCircle, 
@@ -22,12 +20,6 @@ export const Header: React.FC = () => {
     overallLevel,
     setIsShortcutsOpen 
   } = useApp();
-
-  const toggleTheme = () => {
-    if (settings.theme === 'light') updateSettings({ theme: 'dark' });
-    else if (settings.theme === 'dark') updateSettings({ theme: 'system' });
-    else updateSettings({ theme: 'light' });
-  };
 
   const isSoundActive = settings.soundEnabled && settings.sound !== 'off';
 
@@ -50,7 +42,7 @@ export const Header: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-zinc-50/80 dark:bg-zinc-950/80 border-b border-zinc-200/60 dark:border-zinc-800/60 transition-colors">
+    <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-zinc-950/85 border-b border-zinc-800/80 transition-colors">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-8">
         
         {/* Zone 1: Simple Tip Tap Logo with Keyboard Icon */}
@@ -59,29 +51,29 @@ export const Header: React.FC = () => {
           className="flex items-center gap-2.5 group text-left cursor-pointer focus:outline-none select-none"
           title="Tip tap Home"
         >
-          <div className="w-8 h-8 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform duration-200 shrink-0">
-            <Keyboard className="w-4.5 h-4.5" />
+          <div className="w-8 h-8 rounded-xl bg-zinc-900 border border-zinc-800 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform duration-200 shrink-0">
+            <Keyboard className="w-4.5 h-4.5 text-accent" />
           </div>
-          <span className="text-base font-bold tracking-tight text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
+          <span className="text-base font-bold tracking-tight text-zinc-100 whitespace-nowrap">
             Tip tap
           </span>
         </button>
 
         {/* Zone 2: Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1 p-1 bg-zinc-200/50 dark:bg-zinc-900/60 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80">
+        <nav className="hidden md:flex items-center gap-1 p-1 bg-zinc-900/90 rounded-2xl border border-zinc-800/80 shadow-xs">
           {navItems.map(item => {
             const isActive = activeTab === item.id;
             return (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+                className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-medium rounded-xl transition-all whitespace-nowrap cursor-pointer ${
                   isActive
-                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200/40 dark:hover:bg-zinc-800/40'
+                    ? 'bg-zinc-800 text-white border border-zinc-700/80 shadow-xs font-semibold'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-850/60'
                 }`}
               >
-                {item.icon}
+                <span className={isActive ? 'text-accent' : ''}>{item.icon}</span>
                 <span>{item.label}</span>
               </button>
             );
@@ -93,35 +85,26 @@ export const Header: React.FC = () => {
           {/* Level badge */}
           <button
             onClick={() => setActiveTab('progress')}
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60 transition-colors cursor-pointer"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-medium text-zinc-300 hover:bg-zinc-850 transition-colors cursor-pointer"
             title={`Level ${overallLevel.level}: ${overallLevel.title}`}
           >
-            <Trophy className="w-3.5 h-3.5 text-amber-500" />
+            <Trophy className="w-3.5 h-3.5 text-amber-400" />
             <span className="tabular-nums font-semibold">Lv.{overallLevel.level}</span>
           </button>
 
           {/* Sound Toggle */}
           <button
             onClick={toggleSound}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60 transition-colors cursor-pointer"
+            className="w-9 h-9 rounded-xl bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 flex items-center justify-center text-zinc-300 transition-colors cursor-pointer"
             title={isSoundActive ? 'Mute keystroke sounds' : 'Enable mechanical keystroke sounds'}
           >
-            {!isSoundActive ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-blue-500" />}
-          </button>
-
-          {/* Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60 transition-colors cursor-pointer"
-            title={`Current theme: ${settings.theme}. Click to change.`}
-          >
-            {settings.theme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            {!isSoundActive ? <VolumeX className="w-4 h-4 text-zinc-500" /> : <Volume2 className="w-4 h-4 text-accent" />}
           </button>
 
           {/* Shortcuts Help */}
           <button
             onClick={() => setIsShortcutsOpen(true)}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60 transition-colors cursor-pointer"
+            className="w-9 h-9 rounded-xl bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 flex items-center justify-center text-zinc-300 transition-colors cursor-pointer"
             title="Keyboard shortcuts (?)"
           >
             <HelpCircle className="w-4 h-4" />
@@ -130,7 +113,7 @@ export const Header: React.FC = () => {
       </div>
 
       {/* Mobile Tab Navigation Bar */}
-      <div className="flex md:hidden border-t border-zinc-200/60 dark:border-zinc-800/60 px-2 py-1 justify-around bg-zinc-100/60 dark:bg-zinc-900/60">
+      <div className="flex md:hidden border-t border-zinc-800/80 px-2 py-1 justify-around bg-zinc-950/95">
         {navItems.map(item => {
           const isActive = activeTab === item.id;
           return (
@@ -139,8 +122,8 @@ export const Header: React.FC = () => {
               onClick={() => setActiveTab(item.id)}
               className={`flex flex-col items-center gap-1 py-1 px-3 text-[11px] font-medium rounded-lg transition-colors cursor-pointer ${
                 isActive
-                  ? 'text-blue-600 dark:text-blue-400 font-semibold'
-                  : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                  ? 'text-accent font-semibold'
+                  : 'text-zinc-400 hover:text-zinc-200'
               }`}
             >
               {item.icon}
