@@ -12,9 +12,6 @@ import {
   Sun, 
   Moon, 
   Monitor, 
-  Volume2, 
-  VolumeX, 
-  Sliders, 
   Download, 
   Upload, 
   Trash2, 
@@ -47,28 +44,28 @@ export const SettingsView: React.FC = () => {
     { id: 'graphite', name: 'Graphite', color: '#52525b' }
   ];
 
-  const fontOptions: { id: FontFamily; label: string; preview: string }[] = [
-    { id: 'system', label: 'SF Pro / Apple System', preview: 'The quick brown fox' },
-    { id: 'dm', label: 'DM Sans (Geometric)', preview: 'The quick brown fox' },
-    { id: 'mono', label: 'JetBrains Mono (Monospace)', preview: 'The quick brown fox' },
-    { id: 'serif', label: 'Newsreader (Classic Serif)', preview: 'The quick brown fox' }
+  const fontOptions: { id: FontFamily; label: string }[] = [
+    { id: 'system', label: 'SF Pro / System Sans' },
+    { id: 'dm', label: 'DM Sans (Geometric)' },
+    { id: 'mono', label: 'JetBrains Mono' },
+    { id: 'serif', label: 'Newsreader Serif' }
   ];
 
   const caretOptions: { id: CaretStyle; label: string }[] = [
-    { id: 'bar', label: 'Smooth Bar' },
-    { id: 'line', label: 'Thin Line' },
-    { id: 'block', label: 'Solid Block' },
+    { id: 'bar', label: 'Bar' },
+    { id: 'line', label: 'Line' },
+    { id: 'block', label: 'Block' },
     { id: 'underline', label: 'Underline' },
-    { id: 'pulse', label: 'Soft Pulse' }
+    { id: 'pulse', label: 'Pulse' }
   ];
 
-  const soundOptions: { id: SoundEffect; label: string; desc: string }[] = [
-    { id: 'mechanical', label: 'Mechanical Switch', desc: 'Tactile leaf release & crisp bottom-out click' },
-    { id: 'thock', label: 'Deep Thock', desc: 'Warm, lubed custom mechanical resonance' },
-    { id: 'clicky', label: 'Clicky Snap', desc: 'Sharp high-frequency blue-switch snap' },
-    { id: 'soft', label: 'Soft Dome', desc: 'Quiet, dampened Apple-style chiclet tap' },
-    { id: 'bubble', label: 'Soft Bubble', desc: 'Playful fluid acoustic pop' },
-    { id: 'off', label: 'Silent', desc: 'No keystroke sounds' }
+  const soundOptions: { id: SoundEffect; label: string }[] = [
+    { id: 'mechanical', label: 'Mechanical' },
+    { id: 'thock', label: 'Deep Thock' },
+    { id: 'clicky', label: 'Clicky Snap' },
+    { id: 'soft', label: 'Soft Dome' },
+    { id: 'bubble', label: 'Bubble' },
+    { id: 'off', label: 'Mute' }
   ];
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,7 +74,7 @@ export const SettingsView: React.FC = () => {
 
     const success = await importBackup(file);
     if (success) {
-      setImportStatus('Backup restored successfully!');
+      setImportStatus('Backup restored successfully');
       setTimeout(() => setImportStatus(''), 3000);
     } else {
       setImportStatus('Error importing JSON. Please check file format.');
@@ -86,36 +83,34 @@ export const SettingsView: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto py-6 sm:py-8 px-4 animate-in fade-in duration-200">
+    <div className="w-full max-w-3xl mx-auto py-8 sm:py-10 px-4 sm:px-6 animate-in fade-in duration-200">
       
       {/* Title */}
-      <div className="pb-6 border-b border-zinc-200/80 dark:border-zinc-800/80 mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-          Preferences & Settings
+      <div className="pb-6 mb-8 border-b border-zinc-200/60 dark:border-zinc-800/60">
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+          Preferences
         </h1>
         <p className="text-xs sm:text-sm text-zinc-500 mt-1">
-          Customize your workspace aesthetics, typography, keystroke feedback, and local data.
+          Customize typing experience, audio feedback, and local data.
         </p>
       </div>
 
-      <div className="space-y-8">
+      <div className="space-y-10">
         
-        {/* Appearance & Color */}
-        <section className="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
-            Appearance & Theme
+        {/* Section 1: Appearance */}
+        <div>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-4">
+            Interface & Theme
           </h2>
-          <p className="text-xs text-zinc-400 mb-6">
-            Choose light, dark, or system appearance with customized accent colors.
-          </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Theme Selector */}
-            <div>
-              <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300 block mb-2">
-                Interface Mode
-              </label>
-              <div className="flex items-center gap-2 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl border border-zinc-200/60 dark:border-zinc-700/60">
+          <div className="space-y-5">
+            {/* Theme Mode */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2">
+              <div>
+                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 block">Theme</span>
+                <span className="text-xs text-zinc-500">Light, dark, or follow operating system</span>
+              </div>
+              <div className="flex items-center gap-1 p-1 bg-zinc-100 dark:bg-zinc-850 rounded-xl">
                 {(['light', 'dark', 'system'] as ThemeMode[]).map(mode => {
                   const isActive = settings.theme === mode;
                   const icons = {
@@ -127,9 +122,9 @@ export const SettingsView: React.FC = () => {
                     <button
                       key={mode}
                       onClick={() => updateSettings({ theme: mode })}
-                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium capitalize transition-all cursor-pointer ${
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all cursor-pointer ${
                         isActive
-                          ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                          ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-2xs'
                           : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
                       }`}
                     >
@@ -142,123 +137,115 @@ export const SettingsView: React.FC = () => {
             </div>
 
             {/* Accent Color */}
-            <div>
-              <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300 block mb-2">
-                Accent Highlight
-              </label>
-              <div className="flex items-center gap-2.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 border-t border-zinc-100 dark:border-zinc-800/60">
+              <div>
+                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 block">Accent Color</span>
+                <span className="text-xs text-zinc-500">Color used for focus rings and highlights</span>
+              </div>
+              <div className="flex items-center gap-2">
                 {accentOptions.map(acc => {
                   const isSelected = settings.accent === acc.id;
                   return (
                     <button
                       key={acc.id}
                       onClick={() => updateSettings({ accent: acc.id })}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs ${
+                      className={`w-6 h-6 rounded-full flex items-center justify-center transition-transform cursor-pointer ${
                         isSelected ? 'ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 ring-zinc-900 dark:ring-white scale-110' : 'hover:scale-105'
                       }`}
                       style={{ backgroundColor: acc.color }}
                       title={acc.name}
                     >
-                      {isSelected && <Check className="w-4 h-4 text-white" />}
+                      {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
                     </button>
                   );
                 })}
               </div>
             </div>
           </div>
-        </section>
+        </div>
 
-        {/* Typography & Caret */}
-        <section className="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
-            Typography & Typing Feel
+        {/* Section 2: Typing Display & Typography */}
+        <div className="pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-4">
+            Typing Environment
           </h2>
-          <p className="text-xs text-zinc-400 mb-6">
-            Fine-tune typeface, text size, and caret cursor rendering.
-          </p>
 
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* Font Family */}
-            <div>
-              <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300 block mb-2">
-                Font Family
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {fontOptions.map(font => {
-                  const isSelected = settings.fontFamily === font.id;
-                  return (
-                    <button
-                      key={font.id}
-                      onClick={() => updateSettings({ fontFamily: font.id })}
-                      className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                        isSelected
-                          ? 'border-blue-500 bg-blue-50/20 dark:bg-blue-950/20 shadow-xs'
-                          : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
-                      }`}
-                    >
-                      <span className="text-xs font-semibold block text-zinc-900 dark:text-zinc-100">
-                        {font.label}
-                      </span>
-                      <span className="text-xs text-zinc-400 mt-1 block">
-                        {font.preview}
-                      </span>
-                    </button>
-                  );
-                })}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2">
+              <div>
+                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 block">Typeface</span>
+                <span className="text-xs text-zinc-500">Font family for the typing test stage</span>
+              </div>
+              <div className="flex items-center gap-1 p-1 bg-zinc-100 dark:bg-zinc-850 rounded-xl overflow-x-auto">
+                {fontOptions.map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => updateSettings({ fontFamily: f.id })}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
+                      settings.fontFamily === f.id
+                        ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-2xs font-semibold'
+                        : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Font Size & Caret Style */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+            {/* Font Size */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 border-t border-zinc-100 dark:border-zinc-800/60">
               <div>
-                <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300 block mb-2">
-                  Typing Text Size
-                </label>
-                <div className="flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl border border-zinc-200/60 dark:border-zinc-700/60">
-                  {(['sm', 'md', 'lg', 'xl'] as FontSize[]).map(sz => (
-                    <button
-                      key={sz}
-                      onClick={() => updateSettings({ fontSize: sz })}
-                      className={`flex-1 py-1.5 rounded-xl text-xs font-medium uppercase transition-all cursor-pointer ${
-                        settings.fontSize === sz
-                          ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold'
-                          : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
-                      }`}
-                    >
-                      {sz}
-                    </button>
-                  ))}
-                </div>
+                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 block">Text Size</span>
+                <span className="text-xs text-zinc-500">Scaling for practice words</span>
               </div>
-
-              <div>
-                <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300 block mb-2">
-                  Caret Cursor Style
-                </label>
-                <div className="flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl border border-zinc-200/60 dark:border-zinc-700/60 overflow-x-auto">
-                  {caretOptions.map(c => (
-                    <button
-                      key={c.id}
-                      onClick={() => updateSettings({ caretStyle: c.id })}
-                      className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
-                        settings.caretStyle === c.id
-                          ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold'
-                          : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
-                      }`}
-                    >
-                      {c.label}
-                    </button>
-                  ))}
-                </div>
+              <div className="flex items-center gap-1 p-1 bg-zinc-100 dark:bg-zinc-850 rounded-xl">
+                {(['sm', 'md', 'lg', 'xl'] as FontSize[]).map(sz => (
+                  <button
+                    key={sz}
+                    onClick={() => updateSettings({ fontSize: sz })}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium uppercase transition-all cursor-pointer ${
+                      settings.fontSize === sz
+                        ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-2xs font-semibold'
+                        : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                    }`}
+                  >
+                    {sz}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Additional Toggles */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-              <label className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-100 dark:border-zinc-800 cursor-pointer">
+            {/* Caret Cursor Style */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 border-t border-zinc-100 dark:border-zinc-800/60">
+              <div>
+                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 block">Caret Style</span>
+                <span className="text-xs text-zinc-500">Current character position indicator</span>
+              </div>
+              <div className="flex items-center gap-1 p-1 bg-zinc-100 dark:bg-zinc-850 rounded-xl overflow-x-auto">
+                {caretOptions.map(c => (
+                  <button
+                    key={c.id}
+                    onClick={() => updateSettings({ caretStyle: c.id })}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
+                      settings.caretStyle === c.id
+                        ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-2xs font-semibold'
+                        : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                    }`}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Toggle Controls */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-zinc-100 dark:border-zinc-800/60">
+              <label className="flex items-center justify-between py-2 px-1 cursor-pointer">
                 <div>
-                  <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 block">Highlight Errors</span>
-                  <span className="text-[11px] text-zinc-400">Tint mistyped characters in red</span>
+                  <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 block">Highlight Errors</span>
+                  <span className="text-xs text-zinc-500">Tint mistyped letters</span>
                 </div>
                 <input
                   type="checkbox"
@@ -268,10 +255,10 @@ export const SettingsView: React.FC = () => {
                 />
               </label>
 
-              <label className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-100 dark:border-zinc-800 cursor-pointer">
+              <label className="flex items-center justify-between py-2 px-1 cursor-pointer">
                 <div>
-                  <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 block">Virtual Keyboard</span>
-                  <span className="text-[11px] text-zinc-400">Show QWERTY keyboard guide</span>
+                  <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 block">Virtual Keyboard</span>
+                  <span className="text-xs text-zinc-500">Show ANSI keyboard guide</span>
                 </div>
                 <input
                   type="checkbox"
@@ -281,10 +268,10 @@ export const SettingsView: React.FC = () => {
                 />
               </label>
 
-              <label className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-100 dark:border-zinc-800 cursor-pointer">
+              <label className="flex items-center justify-between py-2 px-1 cursor-pointer">
                 <div>
-                  <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 block">Focus Mode</span>
-                  <span className="text-[11px] text-zinc-400">Hide header, footer, & stats during tests for total immersion</span>
+                  <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 block">Focus Mode</span>
+                  <span className="text-xs text-zinc-500">Hide stats and header during tests</span>
                 </div>
                 <input
                   type="checkbox"
@@ -294,10 +281,10 @@ export const SettingsView: React.FC = () => {
                 />
               </label>
 
-              <label className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-100 dark:border-zinc-800 cursor-pointer">
+              <label className="flex items-center justify-between py-2 px-1 cursor-pointer">
                 <div>
-                  <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 block">Ghosting Pacer</span>
-                  <span className="text-[11px] text-zinc-400">Translucent text layer pacing your previous best performance</span>
+                  <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 block">Ghosting Pacer</span>
+                  <span className="text-xs text-zinc-500">Pace your previous personal best</span>
                 </div>
                 <input
                   type="checkbox"
@@ -306,150 +293,106 @@ export const SettingsView: React.FC = () => {
                   className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
                 />
               </label>
+
+              <label className="flex items-center justify-between py-2 px-1 cursor-pointer">
+                <div>
+                  <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 block">Reduced Motion</span>
+                  <span className="text-xs text-zinc-500">Disable sliding animations</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={settings.reducedMotion}
+                  onChange={e => updateSettings({ reducedMotion: e.target.checked })}
+                  className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                />
+              </label>
             </div>
           </div>
-        </section>
+        </div>
 
-        {/* Audio & Keystroke Haptics */}
-        <section className="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div>
-              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
-                <Volume2 className="w-4 h-4 text-blue-500" />
-                <span>Mechanical Sound Effect Engine</span>
-              </h2>
-              <p className="text-xs text-zinc-400 mt-0.5">
-                Low-latency tactile acoustic synthesis via Web Audio API. Zero external audio files.
-              </p>
-            </div>
-
+        {/* Section 3: Audio & Sound Engine */}
+        <div className="pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              Acoustic Keystrokes
+            </h2>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => playKeySound()}
                 disabled={!settings.soundEnabled || settings.sound === 'off'}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
-                title="Preview current correct keystroke sound"
+                className="flex items-center gap-1 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 disabled:opacity-40 cursor-pointer"
               >
                 <Play className="w-3 h-3 fill-current" />
-                <span>Preview Click</span>
-              </button>
-
-              <button
-                onClick={() => playErrorSound()}
-                disabled={!settings.soundEnabled || !settings.errorSoundEnabled}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium text-rose-600 dark:text-rose-400 transition-colors cursor-pointer border border-rose-200/60 dark:border-rose-800/40"
-                title="Preview error keystroke audio"
-              >
-                <AlertTriangle className="w-3 h-3 text-rose-500" />
-                <span>Preview Error</span>
+                <span>Test Sound</span>
               </button>
             </div>
           </div>
 
-          {/* Sound Master Toggles */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            <label className="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-100 dark:border-zinc-800 cursor-pointer">
+          <div className="space-y-4">
+            {/* Sound Profile Selector */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2">
               <div>
-                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 block">
-                  Mechanical Keystroke Sounds
-                </span>
-                <span className="text-[11px] text-zinc-400">
-                  Play acoustic click on each correct keystroke
-                </span>
+                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 block">Switch Profile</span>
+                <span className="text-xs text-zinc-500">Synthetic Web Audio tactile release profile</span>
               </div>
-              <input
-                type="checkbox"
-                checked={settings.soundEnabled}
-                onChange={e => updateSettings({ soundEnabled: e.target.checked })}
-                className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
-              />
-            </label>
-
-            <label className="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-100 dark:border-zinc-800 cursor-pointer">
-              <div>
-                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 block">
-                  Distinct Error Feedback
-                </span>
-                <span className="text-[11px] text-zinc-400">
-                  Play distinct dampened audio tone on mistyped keys
-                </span>
+              <div className="flex items-center gap-1 p-1 bg-zinc-100 dark:bg-zinc-850 rounded-xl overflow-x-auto">
+                {soundOptions.map(s => {
+                  const isSelected = settings.sound === s.id;
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => {
+                        updateSettings({ sound: s.id, soundEnabled: s.id !== 'off' });
+                        if (s.id !== 'off') setTimeout(() => playKeySound(), 50);
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-2xs font-semibold'
+                          : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  );
+                })}
               </div>
-              <input
-                type="checkbox"
-                checked={settings.errorSoundEnabled}
-                onChange={e => updateSettings({ errorSoundEnabled: e.target.checked })}
-                className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
-              />
-            </label>
-          </div>
-
-          {/* Switch Sound Profiles */}
-          <div className="mb-6">
-            <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300 block mb-2">
-              Keyboard Switch Sound Profile
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {soundOptions.map(snd => {
-                const isSelected = settings.sound === snd.id;
-                return (
-                  <button
-                    key={snd.id}
-                    onClick={() => {
-                      updateSettings({ sound: snd.id, soundEnabled: snd.id !== 'off' });
-                      if (snd.id !== 'off') setTimeout(() => playKeySound(), 50);
-                    }}
-                    className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
-                      isSelected
-                        ? 'border-blue-500 bg-blue-50/20 dark:bg-blue-950/20 shadow-xs'
-                        : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                        {snd.label}
-                      </span>
-                      {isSelected && <Check className="w-3.5 h-3.5 text-blue-500" />}
-                    </div>
-                    <span className="text-[11px] text-zinc-400 block mt-1 leading-snug">
-                      {snd.desc}
-                    </span>
-                  </button>
-                );
-              })}
             </div>
+
+            {/* Error Sound & Volume */}
+            {settings.soundEnabled && settings.sound !== 'off' && (
+              <div className="flex items-center justify-between gap-4 py-2 border-t border-zinc-100 dark:border-zinc-800/60">
+                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Volume</span>
+                <div className="flex items-center gap-3 w-48">
+                  <input
+                    type="range"
+                    min="0.05"
+                    max="0.8"
+                    step="0.05"
+                    value={settings.soundVolume}
+                    onChange={e => updateSettings({ soundVolume: parseFloat(e.target.value) })}
+                    className="w-full accent-blue-600 cursor-pointer"
+                  />
+                  <span className="text-xs font-mono text-zinc-400 tabular-nums w-8">
+                    {Math.round(settings.soundVolume * 100)}%
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
+        </div>
 
-          {/* Volume Slider */}
-          {settings.soundEnabled && settings.sound !== 'off' && (
-            <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center gap-4">
-              <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Click Volume</span>
-              <input
-                type="range"
-                min="0.05"
-                max="0.8"
-                step="0.05"
-                value={settings.soundVolume}
-                onChange={e => updateSettings({ soundVolume: parseFloat(e.target.value) })}
-                className="flex-1 accent-blue-600 cursor-pointer"
-              />
-              <span className="text-xs font-mono text-zinc-400 tabular-nums">
-                {Math.round(settings.soundVolume * 100)}%
-              </span>
-            </div>
-          )}
-        </section>
-
-        {/* Data Persistence, Backup & Reset */}
-        <section className="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
-            Data Storage & Backup
+        {/* Section 4: Data Management & Backups */}
+        <div className="pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-4">
+            Data Storage
           </h2>
-          <p className="text-xs text-zinc-400 mb-4">
-            Tip tap saves all your progress locally in your browser. No account or API keys required. Clearing your browser cache or cookies can remove stored data, so we recommend exporting regular backups.
+
+          <p className="text-xs text-zinc-500 mb-4 max-w-xl">
+            All progress, personal bests, and test history are stored locally in your browser. No server accounts needed.
           </p>
 
           {importStatus && (
-            <div className="p-3 mb-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs font-medium text-blue-600 dark:text-blue-400">
+            <div className="p-2.5 mb-4 rounded-lg bg-blue-500/10 text-xs font-medium text-blue-600 dark:text-blue-400">
               {importStatus}
             </div>
           )}
@@ -457,18 +400,18 @@ export const SettingsView: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={exportBackup}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-900 dark:text-zinc-100 text-xs font-semibold transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-900 dark:text-zinc-100 text-xs font-medium transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Export Progress (JSON)</span>
+              <span>Export JSON</span>
             </button>
 
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-900 dark:text-zinc-100 text-xs font-semibold transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-900 dark:text-zinc-100 text-xs font-medium transition-colors cursor-pointer"
             >
               <Upload className="w-3.5 h-3.5" />
-              <span>Import Progress (JSON)</span>
+              <span>Import JSON</span>
             </button>
 
             <input
@@ -481,34 +424,34 @@ export const SettingsView: React.FC = () => {
 
             <button
               onClick={() => setShowResetConfirm(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs font-semibold transition-colors cursor-pointer ml-auto"
+              className="flex items-center gap-1.5 px-3 py-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg text-xs font-medium transition-colors cursor-pointer sm:ml-auto"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              <span>Reset All Progress</span>
+              <span>Reset Data</span>
             </button>
           </div>
-        </section>
+        </div>
 
       </div>
 
       {/* Confirmation Modal for Reset */}
       {showResetConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 shadow-2xl text-center">
-            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto mb-3">
-              <AlertTriangle className="w-6 h-6" />
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 shadow-xl text-center">
+            <div className="w-10 h-10 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto mb-3">
+              <AlertTriangle className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
               Reset All Progress?
             </h3>
             <p className="text-xs text-zinc-500 mt-1 mb-6">
-              This will permanently delete all completed tests, personal best records, and academy milestones from your local storage.
+              This will permanently delete all saved test records and academy progress from local browser storage.
             </p>
 
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex items-center justify-center gap-2">
               <button
                 onClick={() => setShowResetConfirm(false)}
-                className="flex-1 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                className="flex-1 py-2 rounded-lg text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -517,9 +460,9 @@ export const SettingsView: React.FC = () => {
                   resetAllData();
                   setShowResetConfirm(false);
                 }}
-                className="flex-1 py-2 rounded-xl text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 transition-colors cursor-pointer shadow-sm"
+                className="flex-1 py-2 rounded-lg text-xs font-medium text-white bg-rose-600 hover:bg-rose-500 transition-colors cursor-pointer"
               >
-                Yes, Reset
+                Reset
               </button>
             </div>
           </div>
