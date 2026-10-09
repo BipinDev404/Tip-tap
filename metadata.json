@@ -1,0 +1,7 @@
+{
+  "name": "Tip tap — Premium Typing Experience",
+  "description": "A refined, distraction-free typing practice web application combining Apple-inspired minimalism with rapid keyboard fluency drills and beginner academy.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
