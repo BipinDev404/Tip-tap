@@ -141,10 +141,10 @@ export const SettingsView: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto py-8 sm:py-10 px-4 sm:px-6 animate-in fade-in duration-200">
+    <div className="w-full max-w-4xl mx-auto py-5 sm:py-10 px-3 sm:px-6 animate-in fade-in duration-200">
       
       {/* Title */}
-      <div className="pb-6 mb-8 border-b border-zinc-800">
+      <div className="pb-5 sm:pb-6 mb-6 sm:mb-8 border-b border-zinc-800">
         <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-100">
           Preferences
         </h1>
@@ -153,10 +153,10 @@ export const SettingsView: React.FC = () => {
         </p>
       </div>
 
-      <div className="space-y-12">
+      <div className="space-y-8 sm:space-y-12">
         
         {/* Section 1: Accent Color */}
-        <div className="bg-zinc-900/60 border border-zinc-800 rounded-3xl p-5 sm:p-7 shadow-sm">
+        <div className="bg-zinc-900/60 border border-zinc-800 rounded-3xl p-4 sm:p-7 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Radio className="w-4 h-4 text-accent" />
             <h2 className="text-sm font-semibold tracking-wide text-zinc-200">

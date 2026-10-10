@@ -180,3 +180,12 @@ body.reduce-motion *,
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(120, 120, 120, 0.45);
 }
+
+/* No scrollbar utility for clean mobile horizontal touch bars */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

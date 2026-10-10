@@ -77,18 +77,18 @@ export const LearnView: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto py-8 sm:py-12 px-4 sm:px-6 animate-in fade-in duration-200">
+    <div className="w-full max-w-4xl mx-auto py-5 sm:py-12 px-3 sm:px-6 animate-in fade-in duration-200">
       
       {/* Clean Minimalist Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 mb-8 border-b border-zinc-200/60 dark:border-zinc-800/60">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 pb-5 sm:pb-6 mb-6 sm:mb-8 border-b border-zinc-200/60 dark:border-zinc-800/60">
         <div>
-          <div className="flex items-center gap-2 text-xs font-medium text-zinc-500 mb-1.5">
+          <div className="flex items-center gap-2 text-xs font-medium text-zinc-500 mb-1">
             <GraduationCap className="w-4 h-4 text-blue-500" />
             <span>Curriculum & Drills</span>
             <span aria-hidden="true" className="text-zinc-300 dark:text-zinc-700">·</span>
             <span>{totalCompleted} of {flatLessons.length} mastered</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+          <h1 className="text-2xl sm:text-4xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
             Learn to Type
           </h1>
           <p className="text-xs sm:text-sm text-zinc-500 mt-1 max-w-xl">
@@ -161,7 +161,7 @@ export const LearnView: React.FC = () => {
                           handleLaunchPractice(lesson, 'practice');
                         }
                       }}
-                      className={`group flex items-center justify-between py-3.5 sm:py-4 px-2 sm:px-3 transition-colors ${
+                      className={`group flex items-center justify-between py-3 sm:py-4 px-2 sm:px-3 transition-colors touch-manipulation min-h-[48px] ${
                         isCompleted
                           ? 'hover:bg-zinc-900/60 cursor-pointer'
                           : isAvailable

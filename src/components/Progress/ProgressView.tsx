@@ -94,10 +94,10 @@ export const ProgressView: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto py-8 sm:py-10 px-4 sm:px-6 animate-in fade-in duration-200">
+    <div className="w-full max-w-4xl mx-auto py-6 sm:py-10 px-3 sm:px-6 animate-in fade-in duration-200">
       
       {/* Clean Header with Level Status */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 mb-8 border-b border-zinc-800">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 mb-6 sm:mb-8 border-b border-zinc-800">
         <div>
           <div className="flex items-center gap-2 text-xs font-medium text-zinc-400 mb-1.5">
             <Activity className="w-3.5 h-3.5 text-accent" />
@@ -138,7 +138,7 @@ export const ProgressView: React.FC = () => {
       </div>
 
       {/* Primary KPI Strip - Clean Typographic Alignment */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 py-4 mb-10 border-b border-zinc-800">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 py-3 sm:py-4 mb-8 sm:mb-10 border-b border-zinc-800">
         <div>
           <span className="text-xs text-zinc-500 block">Personal Best</span>
           <div className="text-2xl sm:text-3xl font-extrabold text-accent tabular-nums mt-0.5">

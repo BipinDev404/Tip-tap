@@ -429,7 +429,7 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
 
   return (
     <div className="w-full max-w-4xl mx-auto my-2 animate-in fade-in zoom-in-95 duration-200">
-      <div className="bg-zinc-950/95 border border-zinc-800/90 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-2xl">
+      <div className="bg-zinc-950/95 border border-zinc-800/90 rounded-3xl p-4 sm:p-10 shadow-2xl backdrop-blur-2xl">
         
         {/* Top Header Label */}
         <div className="text-center mb-4">
@@ -461,7 +461,7 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
         )}
 
         {/* CENTERED HERO SECTION: COLOR-CODED GIANT WPM */}
-        <div className="flex flex-col items-center justify-center text-center pb-8 border-b border-zinc-800/80">
+        <div className="flex flex-col items-center justify-center text-center pb-6 sm:pb-8 border-b border-zinc-800/80">
           
           {/* Performance Status Badge */}
           <div className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold border mb-2 ${wpmStyle.badgeBg}`}>
@@ -471,7 +471,7 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
 
           {/* Centered Giant Color-Coded WPM Number */}
           <div className="flex flex-col items-center justify-center my-1">
-            <div className={`text-8xl sm:text-9xl md:text-[10rem] font-black tracking-tight tabular-nums leading-none ${wpmStyle.textColor} ${wpmStyle.glow}`}>
+            <div className={`text-7xl sm:text-9xl md:text-[10rem] font-black tracking-tight tabular-nums leading-none ${wpmStyle.textColor} ${wpmStyle.glow}`}>
               {result.wpm}
             </div>
             <div className="text-2xl sm:text-3xl font-black text-zinc-400 tracking-widest uppercase mt-1">

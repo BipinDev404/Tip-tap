@@ -85,33 +85,45 @@ export const LessonModal: React.FC<LessonModalProps> = ({
     // Handle Backspace
     if (e.key === 'Backspace') {
       e.preventDefault();
-      if (typedText.length > 0) {
-        setTypedText(prev => prev.slice(0, -1));
-        playKeySound();
-      }
+      handleBackspace();
       return;
     }
 
     // Normal single character
     if (e.key.length === 1) {
       e.preventDefault();
-      const nextIndex = typedText.length;
-      const expectedChar = targetText[nextIndex];
-      const typedChar = e.key;
+      processChar(e.key);
+    }
+  };
 
-      if (typedChar === expectedChar) {
-        playKeySound();
-      } else {
-        playErrorSound();
-      }
+  const handleBackspace = () => {
+    if (isCompleted) return;
+    if (typedText.length > 0) {
+      setTypedText(prev => prev.slice(0, -1));
+      playKeySound();
+    }
+  };
 
-      const nextTyped = typedText + typedChar;
-      setTypedText(nextTyped);
+  const processChar = (typedChar: string) => {
+    if (isCompleted) return;
+    if (!startTime) {
+      setStartTime(Date.now());
+    }
+    const nextIndex = typedText.length;
+    const expectedChar = targetText[nextIndex];
 
-      // Check if finished
-      if (nextTyped.length >= targetText.length) {
-        finishLesson(nextTyped);
-      }
+    if (typedChar === expectedChar) {
+      playKeySound();
+    } else {
+      playErrorSound();
+    }
+
+    const nextTyped = typedText + typedChar;
+    setTypedText(nextTyped);
+
+    // Check if finished
+    if (nextTyped.length >= targetText.length) {
+      finishLesson(nextTyped);
     }
   };
 
@@ -198,16 +210,35 @@ export const LessonModal: React.FC<LessonModalProps> = ({
         </div>
 
         {/* Typing Stage */}
-        <div className="relative my-4 p-5 sm:p-6 rounded-xl bg-zinc-900/90 border border-zinc-800/80 cursor-text select-none min-h-[110px] sm:min-h-[130px] flex items-center justify-center shadow-inner">
+        <div 
+          onClick={() => inputRef.current?.focus()}
+          className="relative my-4 p-4 sm:p-6 rounded-xl bg-zinc-900/90 border border-zinc-800/80 cursor-text select-none min-h-[100px] sm:min-h-[130px] flex items-center justify-center shadow-inner touch-manipulation"
+        >
           <input
             ref={inputRef}
             type="text"
             autoComplete="off"
-            autoCapitalize="off"
+            autoCapitalize="none"
             autoCorrect="off"
             spellCheck="false"
-            className="absolute opacity-0 -top-40 left-0 w-1 h-1 pointer-events-none"
+            inputMode="text"
+            aria-label="Lesson typing input"
+            className="absolute inset-0 opacity-0 w-full h-full cursor-text touch-manipulation text-base z-10"
             onKeyDown={handleKeyDown}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (!val) return;
+              for (let i = 0; i < val.length; i++) {
+                processChar(val[i]);
+              }
+              e.target.value = '';
+            }}
+            onBeforeInput={(e) => {
+              const nativeEvent = e.nativeEvent as InputEvent;
+              if (nativeEvent && nativeEvent.inputType === 'deleteContentBackward') {
+                handleBackspace();
+              }
+            }}
             tabIndex={0}
             autoFocus
           />

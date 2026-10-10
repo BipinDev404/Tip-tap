@@ -33,7 +33,7 @@ const AppContent: React.FC = () => {
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col pb-20 md:pb-6">
         {activeTab === 'practice' && <PracticeView />}
         {activeTab === 'learn' && <LearnView />}
         {activeTab === 'progress' && <ProgressView />}
@@ -50,7 +50,7 @@ const AppContent: React.FC = () => {
       <SEOModal isOpen={isSEOModalOpen} onClose={() => setIsSEOModalOpen(false)} />
 
       {/* Minimalist Apple-inspired Footer - Smoothly hides in Focus Mode during active typing */}
-      <footer className={`w-full py-6 px-4 border-t border-zinc-200/60 dark:border-zinc-800/60 mt-auto text-center text-xs text-zinc-500 dark:text-zinc-500 transition-all duration-300 ease-in-out ${isFocusModeActive ? 'opacity-0 translate-y-full pointer-events-none max-h-0 py-0 overflow-hidden border-transparent' : 'opacity-100 translate-y-0'}`}>
+      <footer className={`w-full py-6 px-4 border-t border-zinc-200/60 dark:border-zinc-800/60 mt-auto text-center text-xs text-zinc-500 dark:text-zinc-500 mb-16 md:mb-0 transition-all duration-300 ease-in-out ${isFocusModeActive ? 'opacity-0 translate-y-full pointer-events-none max-h-0 py-0 overflow-hidden border-transparent' : 'opacity-100 translate-y-0'}`}>
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-zinc-700 dark:text-zinc-300 font-brand">tipTap</span>

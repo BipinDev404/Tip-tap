@@ -214,13 +214,19 @@ export const PracticeView: React.FC = () => {
     const lines: number[][] = [];
     let currentLine: number[] = [];
     let lastTop: number | null = null;
-    const baseLineHeightMap: Record<string, number> = {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+    const baseLineHeightMap: Record<string, number> = isMobile ? {
+      sm: 36,
+      md: 44,
+      lg: 52,
+      xl: 62
+    } : {
       sm: 44,
       md: 52,
       lg: 60,
       xl: 72
     };
-    const minLineHeight = baseLineHeightMap[settings.fontSize] || 60;
+    const minLineHeight = baseLineHeightMap[settings.fontSize] || (isMobile ? 52 : 60);
     let detectedLineHeight = minLineHeight;
 
     probeEls.forEach((el, idx) => {
@@ -268,14 +274,25 @@ export const PracticeView: React.FC = () => {
     return () => cancelAnimationFrame(frameId);
   }, [targetText, settings.fontSize, settings.fontFamily, testSessionId, measureProbeLines]);
 
-  // Recalculate on container resize via ResizeObserver
+  // Recalculate on container resize via ResizeObserver and window events
   useEffect(() => {
     if (!textContainerRef.current) return;
     const observer = new ResizeObserver(() => {
       measureProbeLines();
     });
     observer.observe(textContainerRef.current);
-    return () => observer.disconnect();
+
+    const handleOrientation = () => {
+      setTimeout(measureProbeLines, 100);
+    };
+    window.addEventListener('resize', measureProbeLines);
+    window.addEventListener('orientationchange', handleOrientation);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', measureProbeLines);
+      window.removeEventListener('orientationchange', handleOrientation);
+    };
   }, [measureProbeLines]);
 
   // Finish Test Calculation
@@ -500,6 +517,23 @@ export const PracticeView: React.FC = () => {
       return;
     }
 
+    // Handle Backspace
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      handleBackspace();
+      return;
+    }
+
+    // Handle normal single character key
+    if (e.key.length === 1) {
+      e.preventDefault();
+      processTypedChar(e.key);
+    }
+  };
+
+  // Process single character from physical or mobile software keyboard
+  const processTypedChar = useCallback((typedChar: string) => {
+    if (isTestFinished) return;
     const now = Date.now();
     keystrokeTimestamps.current.push(now);
 
@@ -510,43 +544,54 @@ export const PracticeView: React.FC = () => {
       setStartTime(now);
     }
 
-    setLastKeyPressed(e.key);
+    setLastKeyPressed(typedChar);
     setTimeout(() => setLastKeyPressed(null), 120);
 
-    // Handle Backspace
-    if (e.key === 'Backspace') {
-      e.preventDefault();
-      if (typedText.length > 0) {
-        setTypedText(prev => prev.slice(0, -1));
-        playKeySound();
-      }
-      return;
+    const nextIndex = typedTextRef.current.length;
+    const expectedChar = targetTextRef.current[nextIndex];
+
+    if (typedChar === expectedChar) {
+      playKeySound();
+    } else {
+      playErrorSound();
+      // Track missed key
+      const expectedKey = expectedChar ? expectedChar.toLowerCase() : 'unknown';
+      missedKeysRef.current[expectedKey] = (missedKeysRef.current[expectedKey] || 0) + 1;
     }
 
-    // Handle normal single character key
-    if (e.key.length === 1) {
-      e.preventDefault();
-      const nextIndex = typedText.length;
-      const expectedChar = targetText[nextIndex];
-      const typedChar = e.key;
+    const nextTyped = typedTextRef.current + typedChar;
+    setTypedText(nextTyped);
 
-      if (typedChar === expectedChar) {
-        playKeySound();
-      } else {
-        playErrorSound();
-        // Track missed key
-        const expectedKey = expectedChar ? expectedChar.toLowerCase() : 'unknown';
-        missedKeysRef.current[expectedKey] = (missedKeysRef.current[expectedKey] || 0) + 1;
-      }
-
-      const nextTyped = typedText + typedChar;
-      setTypedText(nextTyped);
-
-      // Check word mode or quote completion
-      if (nextTyped.length >= targetText.length) {
-        finishTest();
-      }
+    // Check completion
+    if (nextTyped.length >= targetTextRef.current.length) {
+      finishTestRef.current();
     }
+  }, [isTestFinished, isTestActive, setContextTestActive, playKeySound, playErrorSound]);
+
+  const handleBackspace = useCallback(() => {
+    if (isTestFinished) return;
+    if (typedTextRef.current.length > 0) {
+      setTypedText(prev => prev.slice(0, -1));
+      playKeySound();
+    }
+  }, [isTestFinished, playKeySound]);
+
+  // Handle mobile software keyboard backspace events
+  const handleBeforeInput = (e: React.FormEvent<HTMLInputElement>) => {
+    const nativeEvent = e.nativeEvent as InputEvent;
+    if (nativeEvent && nativeEvent.inputType === 'deleteContentBackward') {
+      handleBackspace();
+    }
+  };
+
+  // Mobile touch virtual keyboard input handler (for Android/iOS software keyboards)
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (!val) return;
+    for (let i = 0; i < val.length; i++) {
+      processTypedChar(val[i]);
+    }
+    e.target.value = '';
   };
 
   // Expected next character for Virtual Keyboard highlight
@@ -671,19 +716,19 @@ export const PracticeView: React.FC = () => {
     return 60; // Default gentle pacing baseline if no prior tests recorded
   }, [results, mode, personalBestWpm]);
 
-  // Font size mapping for typing text
+  // Font size mapping for typing text (Phone responsive)
   const fontSizeClass = useMemo(() => {
     switch (settings.fontSize) {
-      case 'sm': return 'text-xl sm:text-2xl leading-relaxed tracking-normal';
-      case 'md': return 'text-2xl sm:text-3xl leading-relaxed tracking-normal';
-      case 'xl': return 'text-4xl sm:text-5xl leading-relaxed tracking-normal';
+      case 'sm': return 'text-lg sm:text-xl md:text-2xl leading-relaxed tracking-normal';
+      case 'md': return 'text-xl sm:text-2xl md:text-3xl leading-relaxed tracking-normal';
+      case 'xl': return 'text-3xl sm:text-4xl md:text-5xl leading-relaxed tracking-normal';
       case 'lg':
-      default: return 'text-3xl sm:text-4xl leading-relaxed tracking-normal';
+      default: return 'text-2xl sm:text-3xl md:text-4xl leading-relaxed tracking-normal';
     }
   }, [settings.fontSize]);
 
   return (
-    <div className="w-full flex flex-col items-center justify-start min-h-[calc(100vh-80px)] py-4 sm:py-8 px-4 max-w-5xl mx-auto">
+    <div className="w-full flex flex-col items-center justify-start min-h-[calc(100vh-80px)] py-3 sm:py-8 px-3 sm:px-4 max-w-5xl mx-auto">
       
       {/* If test is finished, render Results Screen */}
       {isTestFinished && finishedResult ? (
@@ -703,21 +748,21 @@ export const PracticeView: React.FC = () => {
         />
       ) : (
         <>
-          {/* Mode Selector and Controls Deck - Distinct Mini-Boxes Aligned Left & Right */}
-          <div className={`w-full max-w-4xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 mb-6 transition-all duration-300 ${
+          {/* Mode Selector and Controls Deck - Distinct Mini-Boxes aligned Left & Right on Desktop, Ergonomic on Mobile */}
+          <div className={`w-full max-w-4xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 sm:gap-3 mb-4 sm:mb-6 transition-all duration-300 ${
             settings.focusMode && isTestActive
               ? 'opacity-0 pointer-events-none max-h-0 py-0 mb-0 overflow-hidden border-transparent'
               : isTestActive ? 'opacity-35 hover:opacity-100' : 'opacity-100'
           }`}>
             
             {/* Left Deck: Mode Mini-Box & Speed/Option Mini-Box */}
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
               
-              {/* Mini-Box 1: Test Mode Selection */}
-              <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm">
+              {/* Mini-Box 1: Test Mode Selection (4 equal columns on mobile for clean phone layout) */}
+              <div className="grid grid-cols-4 sm:flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm shrink-0">
                 <button
                   onClick={() => { setMode('time'); setPracticeTargetWords(null); focusInput(); }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                  className={`flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-medium transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
                     mode === 'time' && !practiceTargetWords
                       ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
                       : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
@@ -730,7 +775,7 @@ export const PracticeView: React.FC = () => {
 
                 <button
                   onClick={() => { setMode('words'); setPracticeTargetWords(null); focusInput(); }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                  className={`flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-medium transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
                     mode === 'words' && !practiceTargetWords
                       ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
                       : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
@@ -743,7 +788,7 @@ export const PracticeView: React.FC = () => {
 
                 <button
                   onClick={() => { setMode('quote'); setPracticeTargetWords(null); focusInput(); }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                  className={`flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-medium transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
                     mode === 'quote' && !practiceTargetWords
                       ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
                       : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
@@ -759,7 +804,7 @@ export const PracticeView: React.FC = () => {
                     setMode('custom');
                     setIsCustomModalOpen(true);
                   }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                  className={`flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-medium transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
                     mode === 'custom' || practiceTargetWords
                       ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
                       : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
@@ -773,13 +818,13 @@ export const PracticeView: React.FC = () => {
 
               {/* Mini-Box 2: Duration / Speed / Option Mini-Box */}
               {mode === 'time' && !practiceTargetWords && (
-                <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm animate-in fade-in duration-150">
-                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-2">Duration</span>
+                <div className="flex items-center justify-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm shrink-0 animate-in fade-in duration-150">
+                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-1.5 sm:px-2">Duration</span>
                   {([15, 30, 60, 120] as TimeOption[]).map(t => (
                     <button
                       key={t}
                       onClick={() => { setTimeOption(t); focusInput(); }}
-                      className={`px-2.5 py-1 text-xs font-medium rounded-xl transition-all tabular-nums cursor-pointer ${
+                      className={`flex-1 sm:flex-none px-2 sm:px-2.5 py-1 text-xs font-medium rounded-xl transition-all tabular-nums cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
                         timeOption === t
                           ? 'bg-zinc-800 text-accent border border-zinc-700 font-bold shadow-xs'
                           : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
@@ -792,13 +837,13 @@ export const PracticeView: React.FC = () => {
               )}
 
               {mode === 'words' && !practiceTargetWords && (
-                <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm animate-in fade-in duration-150">
-                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-2">Count</span>
+                <div className="flex items-center justify-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm shrink-0 animate-in fade-in duration-150">
+                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-1.5 sm:px-2">Count</span>
                   {([10, 25, 50, 100] as WordsOption[]).map(w => (
                     <button
                       key={w}
                       onClick={() => { setWordsOption(w); focusInput(); }}
-                      className={`px-2.5 py-1 text-xs font-medium rounded-xl transition-all tabular-nums cursor-pointer ${
+                      className={`flex-1 sm:flex-none px-2 sm:px-2.5 py-1 text-xs font-medium rounded-xl transition-all tabular-nums cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
                         wordsOption === w
                           ? 'bg-zinc-800 text-accent border border-zinc-700 font-bold shadow-xs'
                           : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
@@ -811,13 +856,13 @@ export const PracticeView: React.FC = () => {
               )}
 
               {mode === 'quote' && !practiceTargetWords && (
-                <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm animate-in fade-in duration-150">
-                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-2">Length</span>
+                <div className="flex items-center justify-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm shrink-0 animate-in fade-in duration-150">
+                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-1.5 sm:px-2">Length</span>
                   {(['short', 'medium', 'long'] as QuoteLength[]).map(ql => (
                     <button
                       key={ql}
                       onClick={() => { setQuoteLength(ql); focusInput(); }}
-                      className={`px-2.5 py-1 text-xs font-medium rounded-xl capitalize transition-all cursor-pointer ${
+                      className={`flex-1 sm:flex-none px-2 sm:px-2.5 py-1 text-xs font-medium rounded-xl capitalize transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
                         quoteLength === ql
                           ? 'bg-zinc-800 text-accent border border-zinc-700 font-bold shadow-xs'
                           : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
@@ -830,38 +875,38 @@ export const PracticeView: React.FC = () => {
               )}
 
               {(mode === 'custom' || practiceTargetWords) && (
-                <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm animate-in fade-in duration-150">
+                <div className="flex items-center justify-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm shrink-0 animate-in fade-in duration-150">
                   <button
                     onClick={() => setIsCustomModalOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-xl bg-zinc-800 text-accent border border-zinc-700 hover:bg-zinc-750 transition-all cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-xl bg-zinc-800 text-accent border border-zinc-700 hover:bg-zinc-750 transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95"
                   >
                     <Edit3 className="w-3 h-3" />
-                    <span>Edit Custom Text</span>
+                    <span>Edit Custom</span>
                   </button>
                 </div>
               )}
             </div>
 
             {/* Right Deck: Modifiers Mini-Box & Tools/Controls Mini-Box */}
-            <div className="flex flex-wrap items-center justify-center md:justify-end gap-2.5">
+            <div className="flex items-center justify-between sm:justify-end gap-2 w-full md:w-auto">
               
               {/* Mini-Box 3: Modifiers (Punctuation & Numbers) */}
               {mode !== 'quote' && !practiceTargetWords && (
-                <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm">
+                <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm shrink-0">
                   <button
                     onClick={() => { setHasPunctuation(p => !p); focusInput(); }}
-                    className={`px-2.5 py-1 text-xs font-medium rounded-xl transition-all cursor-pointer ${
+                    className={`px-2 sm:px-2.5 py-1 text-xs font-medium rounded-xl transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
                       hasPunctuation
                         ? 'bg-zinc-800 text-accent border border-zinc-700 font-semibold shadow-xs'
                         : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
                     }`}
                     title="Toggle punctuation marks"
                   >
-                    @ punctuation
+                    @ punct
                   </button>
                   <button
                     onClick={() => { setHasNumbers(n => !n); focusInput(); }}
-                    className={`px-2.5 py-1 text-xs font-medium rounded-xl transition-all cursor-pointer ${
+                    className={`px-2 sm:px-2.5 py-1 text-xs font-medium rounded-xl transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
                       hasNumbers
                         ? 'bg-zinc-800 text-accent border border-zinc-700 font-semibold shadow-xs'
                         : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
@@ -874,29 +919,29 @@ export const PracticeView: React.FC = () => {
               )}
 
               {/* Mini-Box 4: View & Tools Controls */}
-              <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm">
+              <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm shrink-0 ml-auto sm:ml-0">
                 {/* Virtual Keyboard Toggle */}
                 <button
                   onClick={() => updateSettings({ showVirtualKeyboard: !settings.showVirtualKeyboard })}
-                  className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
+                  className={`p-1.5 rounded-xl border transition-all cursor-pointer touch-manipulation active:scale-95 ${
                     settings.showVirtualKeyboard
-                      ? 'text-accent bg-zinc-800 border-zinc-700 shadow-xs'
+                      ? 'text-accent bg-zinc-800 border-zinc-750 shadow-xs'
                       : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border-transparent'
                   }`}
-                  title="Toggle on-screen visual keyboard"
+                  title="Toggle visual keyboard"
                 >
-                  <KeyboardIcon className="w-4 h-4" />
+                  <KeyboardIcon className="w-3.5 h-3.5" />
                 </button>
 
                 {/* Focus Mode Toggle */}
                 <button
                   onClick={() => updateSettings({ focusMode: !settings.focusMode })}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl transition-all cursor-pointer text-xs font-medium border ${
+                  className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-xl transition-all cursor-pointer text-xs font-medium border touch-manipulation active:scale-95 ${
                     settings.focusMode
-                      ? 'text-accent bg-zinc-800 border-zinc-700 font-semibold shadow-xs'
+                      ? 'text-accent bg-zinc-800 border-zinc-750 font-semibold shadow-xs'
                       : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border-transparent'
                   }`}
-                  title={settings.focusMode ? 'Focus Mode active (hides header & controls during typing)' : 'Enable Focus Mode (hides header & controls during typing)'}
+                  title={settings.focusMode ? 'Focus Mode active' : 'Enable Focus Mode'}
                 >
                   <EyeOff className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline text-[11px]">Focus</span>
@@ -905,11 +950,11 @@ export const PracticeView: React.FC = () => {
                 {/* Quick Restart */}
                 <button
                   onClick={() => resetTest(false)}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent transition-all cursor-pointer"
-                  title="Restart test (Tab + Enter)"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent transition-all cursor-pointer touch-manipulation active:scale-95"
+                  title="Restart test"
                 >
                   <RotateCcw className="w-3.5 h-3.5 text-accent" />
-                  <span className="hidden sm:inline text-[11px]">Restart</span>
+                  <span className="text-[11px]">Restart</span>
                 </button>
               </div>
 
@@ -939,20 +984,20 @@ export const PracticeView: React.FC = () => {
               ? 'opacity-0 pointer-events-none max-h-0 mb-0 overflow-hidden'
               : 'opacity-100'
           }`}>
-            <div className="flex items-center gap-5 tabular-nums">
+            <div className="flex items-center gap-3 sm:gap-5 tabular-nums text-[11px] sm:text-xs">
               {mode === 'time' && (
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
                   <span className="text-zinc-500">Time:</span>
-                  <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200">
+                  <span className="text-xs sm:text-sm font-bold text-zinc-800 dark:text-zinc-200">
                     {isTestActive ? liveStats.remainingTime : timeOption}s
                   </span>
                 </div>
               )}
 
               {mode === 'words' && (
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
                   <span className="text-zinc-500">Words:</span>
-                  <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200">
+                  <span className="text-xs sm:text-sm font-bold text-zinc-800 dark:text-zinc-200">
                     {typedText.trim().split(/\s+/).filter(Boolean).length} / {wordsOption}
                   </span>
                 </div>
@@ -960,16 +1005,16 @@ export const PracticeView: React.FC = () => {
 
               {isTestActive && (
                 <>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     <span className="text-zinc-500">WPM:</span>
-                    <span className="text-sm font-extrabold text-accent">
+                    <span className="text-xs sm:text-sm font-extrabold text-accent">
                       {liveStats.wpm}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     <span className="text-zinc-500">Acc:</span>
-                    <span className="text-sm font-bold text-emerald-400">
+                    <span className="text-xs sm:text-sm font-bold text-emerald-400">
                       {liveStats.accuracy}%
                     </span>
                   </div>
@@ -978,7 +1023,7 @@ export const PracticeView: React.FC = () => {
             </div>
 
             {/* Ghost Pacing Target Indicator */}
-            <div className="text-[11px] text-zinc-500 hidden sm:flex items-center gap-1.5">
+            <div className="text-[10px] sm:text-[11px] text-zinc-500 flex items-center gap-1">
               <span>PB:</span>
               <span className="font-semibold text-zinc-400">{previousBestWpm} WPM</span>
             </div>
@@ -987,7 +1032,7 @@ export const PracticeView: React.FC = () => {
           {/* Centered Distraction-Free Linear Typing Stage */}
           <div
             onClick={focusInput}
-            className={`relative w-full max-w-4xl rounded-3xl mt-4 sm:mt-6 mb-8 sm:mb-10 py-8 sm:py-10 px-8 sm:px-12 cursor-pointer select-none bg-zinc-950/90 border transition-all duration-300 shadow-2xl backdrop-blur-md group overflow-hidden ${
+            className={`relative w-full max-w-4xl rounded-2xl sm:rounded-3xl mt-3 sm:mt-6 mb-6 sm:mb-10 py-6 sm:py-10 px-4 sm:px-8 md:px-12 cursor-pointer select-none bg-zinc-950/90 border transition-all duration-300 shadow-2xl backdrop-blur-md group overflow-hidden ${
               isInputFocused 
                 ? 'border-zinc-800 ring-1 ring-zinc-800/60' 
                 : 'border-zinc-800/80 hover:border-zinc-700'
@@ -997,26 +1042,31 @@ export const PracticeView: React.FC = () => {
             {!isInputFocused && (
               <div 
                 onClick={focusInput}
-                className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-zinc-950/45 backdrop-blur-[3px] rounded-3xl cursor-pointer animate-in fade-in duration-200"
+                className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-zinc-950/50 backdrop-blur-[3px] rounded-2xl sm:rounded-3xl cursor-pointer animate-in fade-in duration-200 p-4 text-center touch-manipulation"
               >
-                <div className="flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-zinc-900 border border-zinc-700/80 text-zinc-100 shadow-2xl hover:border-accent hover:bg-zinc-850 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group">
+                <div className="flex items-center gap-2 sm:gap-2.5 px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl bg-zinc-900 border border-zinc-700/80 text-zinc-100 shadow-2xl hover:border-accent hover:bg-zinc-850 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group">
                   <MousePointerClick className="w-4 h-4 text-accent group-hover:scale-110 transition-transform" />
-                  <span className="text-sm font-semibold tracking-wide">Click here to start typing</span>
+                  <span className="text-xs sm:text-sm font-semibold tracking-wide">Tap or click here to start typing</span>
                 </div>
-                <span className="text-[11px] text-zinc-400 mt-2 font-mono">or press any key to focus</span>
+                <span className="text-[10px] sm:text-[11px] text-zinc-400 mt-2 font-mono">or tap anywhere to open keyboard</span>
               </div>
             )}
 
-            {/* Hidden Input for Keyboard Capture (Touch + Physical) */}
+            {/* Transparent Input covering the typing stage on mobile/desktop */}
             <input
               ref={inputRef}
               type="text"
               autoComplete="off"
-              autoCapitalize="off"
+              autoCapitalize="none"
               autoCorrect="off"
               spellCheck="false"
-              className="absolute opacity-0 -top-40 left-0 w-1 h-1 pointer-events-none"
+              inputMode="text"
+              enterKeyHint="done"
+              aria-label="Typing test input"
+              className="absolute inset-0 w-full h-full opacity-0 z-20 cursor-text touch-manipulation text-base"
               onKeyDown={handleKeyDown}
+              onChange={handleInputChange}
+              onBeforeInput={handleBeforeInput}
               onFocus={() => setIsInputFocused(true)}
               onBlur={() => setIsInputFocused(false)}
               tabIndex={0}
@@ -1025,7 +1075,7 @@ export const PracticeView: React.FC = () => {
             {/* Focused Linear Typing View (Sliding Window: Current & Next Line) */}
             <div
               ref={textContainerRef}
-              className={`relative overflow-hidden select-none font-normal text-center transition-all duration-300 px-4 sm:px-6 ${
+              className={`relative overflow-hidden select-none font-normal text-center transition-all duration-300 px-3 sm:px-6 ${
                 !isInputFocused ? 'filter blur-[5px] opacity-25 pointer-events-none select-none' : 'filter-none opacity-100'
               } ${fontSizeClass}`}
               style={{
@@ -1037,9 +1087,9 @@ export const PracticeView: React.FC = () => {
               <div
                 ref={probeContainerRef}
                 aria-hidden="true"
-                className="absolute left-0 top-0 w-full invisible pointer-events-none -z-50 select-none text-center px-4 sm:px-6"
+                className="absolute left-0 top-0 w-full invisible pointer-events-none -z-50 select-none text-center px-3 sm:px-6"
               >
-                <div className="w-[86%] max-w-[800px] mx-auto text-center">
+                <div className="w-full max-w-[800px] mx-auto text-center">
                   {wordsList.map(wordObj => (
                     <span
                       key={`probe-${wordObj.wordIndex}`}
@@ -1172,9 +1222,16 @@ export const PracticeView: React.FC = () => {
             )}
           </div>
 
-          {/* Quick Shortcuts Hint */}
-          <div className="mt-4 text-center">
-            <span className="text-[11px] text-zinc-400/80 font-mono">
+          {/* Quick Shortcuts & Mobile Controls */}
+          <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row items-center justify-center gap-2 text-center">
+            <button
+              onClick={() => resetTest(false)}
+              className="sm:hidden flex items-center gap-1.5 px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-medium text-zinc-300 hover:text-white active:scale-95 transition-all shadow-xs cursor-pointer touch-manipulation"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-accent" />
+              <span>Restart Test</span>
+            </button>
+            <span className="text-[11px] text-zinc-400/80 font-mono hidden sm:inline">
               tab + enter — restart test · esc — reset
             </span>
           </div>
