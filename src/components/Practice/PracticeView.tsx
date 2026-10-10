@@ -23,7 +23,8 @@ import {
   Sparkles,
   SlidersHorizontal,
   ChevronDown,
-  EyeOff
+  EyeOff,
+  MousePointerClick
 } from 'lucide-react';
 
 export const PracticeView: React.FC = () => {
@@ -55,6 +56,9 @@ export const PracticeView: React.FC = () => {
 
   // Active quote if quote mode
   const [activeQuote, setActiveQuote] = useState<Quote | null>(null);
+
+  // Focus state for blurry effect when cursor is not in the box
+  const [isInputFocused, setIsInputFocused] = useState<boolean>(true);
 
   // Engine state
   const [targetText, setTargetText] = useState<string>('');
@@ -152,6 +156,7 @@ export const PracticeView: React.FC = () => {
 
     // Refocus input
     setTimeout(() => {
+      setIsInputFocused(true);
       inputRef.current?.focus();
     }, 20);
   }, [generateText]);
@@ -162,10 +167,43 @@ export const PracticeView: React.FC = () => {
   }, [mode, timeOption, wordsOption, quoteLength, hasPunctuation, hasNumbers, practiceTargetWords]);
 
   // Ensure input stays focused on click and resume Web Audio Context
-  const focusInput = () => {
+  const focusInput = useCallback(() => {
     soundManager.resume();
+    setIsInputFocused(true);
     inputRef.current?.focus();
-  };
+  }, []);
+
+  // Window blur/focus and global typing focus handler
+  useEffect(() => {
+    const handleWindowBlur = () => {
+      setIsInputFocused(false);
+    };
+    const handleWindowFocus = () => {
+      if (document.activeElement === inputRef.current) {
+        setIsInputFocused(true);
+      }
+    };
+    const handleGlobalWindowKey = (e: KeyboardEvent) => {
+      // Don't intercept if user is typing into an input/textarea or if modal is open
+      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
+        return;
+      }
+      if (isCustomModalOpen || isTestFinished) return;
+      if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        focusInput();
+      }
+    };
+
+    window.addEventListener('blur', handleWindowBlur);
+    window.addEventListener('focus', handleWindowFocus);
+    window.addEventListener('keydown', handleGlobalWindowKey);
+
+    return () => {
+      window.removeEventListener('blur', handleWindowBlur);
+      window.removeEventListener('focus', handleWindowFocus);
+      window.removeEventListener('keydown', handleGlobalWindowKey);
+    };
+  }, [focusInput, isCustomModalOpen, isTestFinished]);
 
   // Measure word positions inside the static layout probe to compute line groupings
   const measureProbeLines = useCallback(() => {
@@ -665,79 +703,86 @@ export const PracticeView: React.FC = () => {
         />
       ) : (
         <>
-          {/* Mode Selector and Controls Deck */}
-          <div className={`w-full max-w-4xl flex flex-wrap items-center justify-between gap-3 mb-4 p-2.5 rounded-2xl bg-zinc-950/90 border border-zinc-800/90 transition-all duration-300 shadow-md ${
+          {/* Mode Selector and Controls Deck - Distinct Mini-Boxes Aligned Left & Right */}
+          <div className={`w-full max-w-4xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 mb-6 transition-all duration-300 ${
             settings.focusMode && isTestActive
               ? 'opacity-0 pointer-events-none max-h-0 py-0 mb-0 overflow-hidden border-transparent'
               : isTestActive ? 'opacity-35 hover:opacity-100' : 'opacity-100'
           }`}>
             
-            {/* Mode Tabs */}
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => { setMode('time'); setPracticeTargetWords(null); }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                  mode === 'time' && !practiceTargetWords
-                    ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-                }`}
-              >
-                <Clock className={`w-3.5 h-3.5 ${mode === 'time' && !practiceTargetWords ? 'text-accent' : ''}`} />
-                <span>Time</span>
-              </button>
+            {/* Left Deck: Mode Mini-Box & Speed/Option Mini-Box */}
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5">
+              
+              {/* Mini-Box 1: Test Mode Selection */}
+              <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm">
+                <button
+                  onClick={() => { setMode('time'); setPracticeTargetWords(null); focusInput(); }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                    mode === 'time' && !practiceTargetWords
+                      ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                  }`}
+                  title="Timed speed test"
+                >
+                  <Clock className={`w-3.5 h-3.5 ${mode === 'time' && !practiceTargetWords ? 'text-accent' : ''}`} />
+                  <span>Time</span>
+                </button>
 
-              <button
-                onClick={() => { setMode('words'); setPracticeTargetWords(null); }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                  mode === 'words' && !practiceTargetWords
-                    ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-                }`}
-              >
-                <FileText className={`w-3.5 h-3.5 ${mode === 'words' && !practiceTargetWords ? 'text-accent' : ''}`} />
-                <span>Words</span>
-              </button>
+                <button
+                  onClick={() => { setMode('words'); setPracticeTargetWords(null); focusInput(); }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                    mode === 'words' && !practiceTargetWords
+                      ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                  }`}
+                  title="Word count test"
+                >
+                  <FileText className={`w-3.5 h-3.5 ${mode === 'words' && !practiceTargetWords ? 'text-accent' : ''}`} />
+                  <span>Words</span>
+                </button>
 
-              <button
-                onClick={() => { setMode('quote'); setPracticeTargetWords(null); }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                  mode === 'quote' && !practiceTargetWords
-                    ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-                }`}
-              >
-                <QuoteIcon className={`w-3.5 h-3.5 ${mode === 'quote' && !practiceTargetWords ? 'text-accent' : ''}`} />
-                <span>Quote</span>
-              </button>
+                <button
+                  onClick={() => { setMode('quote'); setPracticeTargetWords(null); focusInput(); }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                    mode === 'quote' && !practiceTargetWords
+                      ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                  }`}
+                  title="Quote transcription mode"
+                >
+                  <QuoteIcon className={`w-3.5 h-3.5 ${mode === 'quote' && !practiceTargetWords ? 'text-accent' : ''}`} />
+                  <span>Quote</span>
+                </button>
 
-              <button
-                onClick={() => {
-                  setMode('custom');
-                  setIsCustomModalOpen(true);
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                  mode === 'custom' || practiceTargetWords
-                    ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-                }`}
-              >
-                <Edit3 className={`w-3.5 h-3.5 ${mode === 'custom' || practiceTargetWords ? 'text-accent' : ''}`} />
-                <span>Custom</span>
-              </button>
-            </div>
+                <button
+                  onClick={() => {
+                    setMode('custom');
+                    setIsCustomModalOpen(true);
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                    mode === 'custom' || practiceTargetWords
+                      ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                  }`}
+                  title="Custom text drill"
+                >
+                  <Edit3 className={`w-3.5 h-3.5 ${mode === 'custom' || practiceTargetWords ? 'text-accent' : ''}`} />
+                  <span>Custom</span>
+                </button>
+              </div>
 
-            {/* Mode-Specific Sub-Options */}
-            <div className="flex items-center gap-2">
+              {/* Mini-Box 2: Duration / Speed / Option Mini-Box */}
               {mode === 'time' && !practiceTargetWords && (
-                <div className="flex items-center gap-1 bg-zinc-900 p-0.5 rounded-xl border border-zinc-800">
+                <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm animate-in fade-in duration-150">
+                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-2">Duration</span>
                   {([15, 30, 60, 120] as TimeOption[]).map(t => (
                     <button
                       key={t}
-                      onClick={() => setTimeOption(t)}
-                      className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-colors tabular-nums cursor-pointer ${
+                      onClick={() => { setTimeOption(t); focusInput(); }}
+                      className={`px-2.5 py-1 text-xs font-medium rounded-xl transition-all tabular-nums cursor-pointer ${
                         timeOption === t
                           ? 'bg-zinc-800 text-accent border border-zinc-700 font-bold shadow-xs'
-                          : 'text-zinc-400 hover:text-zinc-200'
+                          : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
                       }`}
                     >
                       {t}s
@@ -747,15 +792,16 @@ export const PracticeView: React.FC = () => {
               )}
 
               {mode === 'words' && !practiceTargetWords && (
-                <div className="flex items-center gap-1 bg-zinc-900 p-0.5 rounded-xl border border-zinc-800">
+                <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm animate-in fade-in duration-150">
+                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-2">Count</span>
                   {([10, 25, 50, 100] as WordsOption[]).map(w => (
                     <button
                       key={w}
-                      onClick={() => setWordsOption(w)}
-                      className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-colors tabular-nums cursor-pointer ${
+                      onClick={() => { setWordsOption(w); focusInput(); }}
+                      className={`px-2.5 py-1 text-xs font-medium rounded-xl transition-all tabular-nums cursor-pointer ${
                         wordsOption === w
                           ? 'bg-zinc-800 text-accent border border-zinc-700 font-bold shadow-xs'
-                          : 'text-zinc-400 hover:text-zinc-200'
+                          : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
                       }`}
                     >
                       {w}
@@ -765,15 +811,16 @@ export const PracticeView: React.FC = () => {
               )}
 
               {mode === 'quote' && !practiceTargetWords && (
-                <div className="flex items-center gap-1 bg-zinc-900 p-0.5 rounded-xl border border-zinc-800">
+                <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm animate-in fade-in duration-150">
+                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-2">Length</span>
                   {(['short', 'medium', 'long'] as QuoteLength[]).map(ql => (
                     <button
                       key={ql}
-                      onClick={() => setQuoteLength(ql)}
-                      className={`px-2.5 py-1 text-xs font-medium rounded-lg capitalize transition-colors cursor-pointer ${
+                      onClick={() => { setQuoteLength(ql); focusInput(); }}
+                      className={`px-2.5 py-1 text-xs font-medium rounded-xl capitalize transition-all cursor-pointer ${
                         quoteLength === ql
                           ? 'bg-zinc-800 text-accent border border-zinc-700 font-bold shadow-xs'
-                          : 'text-zinc-400 hover:text-zinc-200'
+                          : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
                       }`}
                     >
                       {ql}
@@ -782,26 +829,42 @@ export const PracticeView: React.FC = () => {
                 </div>
               )}
 
-              {/* Toggles: Punctuation and Numbers */}
-              {mode !== 'quote' && !practiceTargetWords && (
-                <div className="flex items-center gap-1 border-l border-zinc-800 pl-2">
+              {(mode === 'custom' || practiceTargetWords) && (
+                <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm animate-in fade-in duration-150">
                   <button
-                    onClick={() => setHasPunctuation(p => !p)}
-                    className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+                    onClick={() => setIsCustomModalOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-xl bg-zinc-800 text-accent border border-zinc-700 hover:bg-zinc-750 transition-all cursor-pointer"
+                  >
+                    <Edit3 className="w-3 h-3" />
+                    <span>Edit Custom Text</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Right Deck: Modifiers Mini-Box & Tools/Controls Mini-Box */}
+            <div className="flex flex-wrap items-center justify-center md:justify-end gap-2.5">
+              
+              {/* Mini-Box 3: Modifiers (Punctuation & Numbers) */}
+              {mode !== 'quote' && !practiceTargetWords && (
+                <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm">
+                  <button
+                    onClick={() => { setHasPunctuation(p => !p); focusInput(); }}
+                    className={`px-2.5 py-1 text-xs font-medium rounded-xl transition-all cursor-pointer ${
                       hasPunctuation
-                        ? 'bg-zinc-800 text-accent border border-zinc-700 font-semibold'
-                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                        ? 'bg-zinc-800 text-accent border border-zinc-700 font-semibold shadow-xs'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
                     }`}
                     title="Toggle punctuation marks"
                   >
                     @ punctuation
                   </button>
                   <button
-                    onClick={() => setHasNumbers(n => !n)}
-                    className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+                    onClick={() => { setHasNumbers(n => !n); focusInput(); }}
+                    className={`px-2.5 py-1 text-xs font-medium rounded-xl transition-all cursor-pointer ${
                       hasNumbers
-                        ? 'bg-zinc-800 text-accent border border-zinc-700 font-semibold'
-                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                        ? 'bg-zinc-800 text-accent border border-zinc-700 font-semibold shadow-xs'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
                     }`}
                     title="Toggle number digits"
                   >
@@ -810,32 +873,46 @@ export const PracticeView: React.FC = () => {
                 </div>
               )}
 
-              {/* Virtual Keyboard Toggle */}
-              <button
-                onClick={() => updateSettings({ showVirtualKeyboard: !settings.showVirtualKeyboard })}
-                className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
-                  settings.showVirtualKeyboard
-                    ? 'text-accent bg-zinc-800 border-zinc-700 shadow-xs'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border-transparent'
-                }`}
-                title="Toggle on-screen visual keyboard"
-              >
-                <KeyboardIcon className="w-4 h-4" />
-              </button>
+              {/* Mini-Box 4: View & Tools Controls */}
+              <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm">
+                {/* Virtual Keyboard Toggle */}
+                <button
+                  onClick={() => updateSettings({ showVirtualKeyboard: !settings.showVirtualKeyboard })}
+                  className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
+                    settings.showVirtualKeyboard
+                      ? 'text-accent bg-zinc-800 border-zinc-700 shadow-xs'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border-transparent'
+                  }`}
+                  title="Toggle on-screen visual keyboard"
+                >
+                  <KeyboardIcon className="w-4 h-4" />
+                </button>
 
-              {/* Focus Mode Toggle */}
-              <button
-                onClick={() => updateSettings({ focusMode: !settings.focusMode })}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl transition-all cursor-pointer text-xs font-medium border ${
-                  settings.focusMode
-                    ? 'text-accent bg-zinc-800 border-zinc-700 font-semibold shadow-xs'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border-transparent'
-                }`}
-                title={settings.focusMode ? 'Focus Mode active (hides header, footer, and stats during test)' : 'Enable Focus Mode (hides header, footer, and stats during test)'}
-              >
-                <EyeOff className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline text-[11px]">Focus Mode</span>
-              </button>
+                {/* Focus Mode Toggle */}
+                <button
+                  onClick={() => updateSettings({ focusMode: !settings.focusMode })}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl transition-all cursor-pointer text-xs font-medium border ${
+                    settings.focusMode
+                      ? 'text-accent bg-zinc-800 border-zinc-700 font-semibold shadow-xs'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border-transparent'
+                  }`}
+                  title={settings.focusMode ? 'Focus Mode active (hides header & controls during typing)' : 'Enable Focus Mode (hides header & controls during typing)'}
+                >
+                  <EyeOff className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline text-[11px]">Focus</span>
+                </button>
+
+                {/* Quick Restart */}
+                <button
+                  onClick={() => resetTest(false)}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent transition-all cursor-pointer"
+                  title="Restart test (Tab + Enter)"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-accent" />
+                  <span className="hidden sm:inline text-[11px]">Restart</span>
+                </button>
+              </div>
+
             </div>
           </div>
 
@@ -857,7 +934,7 @@ export const PracticeView: React.FC = () => {
           )}
 
           {/* Live Telemetry Bar - Hides in Focus Mode during active typing */}
-          <div className={`w-full max-w-3xl flex items-center justify-between px-2 mb-4 text-xs font-medium text-zinc-400 transition-all duration-300 ${
+          <div className={`w-full max-w-4xl flex items-center justify-between px-2 mb-3 text-xs font-medium text-zinc-400 transition-all duration-300 ${
             settings.focusMode && isTestActive
               ? 'opacity-0 pointer-events-none max-h-0 mb-0 overflow-hidden'
               : 'opacity-100'
@@ -900,24 +977,36 @@ export const PracticeView: React.FC = () => {
               )}
             </div>
 
-            {/* Restart Button & Shortcut Indicator */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => resetTest(false)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-zinc-400 hover:text-zinc-200 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 transition-colors cursor-pointer"
-                title="Restart test (Tab then Enter)"
-              >
-                <RotateCcw className="w-3.5 h-3.5 text-accent" />
-                <span className="text-[11px] font-medium">Restart</span>
-              </button>
+            {/* Ghost Pacing Target Indicator */}
+            <div className="text-[11px] text-zinc-500 hidden sm:flex items-center gap-1.5">
+              <span>PB:</span>
+              <span className="font-semibold text-zinc-400">{previousBestWpm} WPM</span>
             </div>
           </div>
 
           {/* Centered Distraction-Free Linear Typing Stage */}
           <div
             onClick={focusInput}
-            className="relative w-full max-w-4xl rounded-3xl mt-8 sm:mt-12 mb-8 sm:mb-10 py-8 sm:py-10 px-8 sm:px-12 cursor-text select-none bg-zinc-950/90 border border-zinc-800 shadow-2xl backdrop-blur-md transition-all group"
+            className={`relative w-full max-w-4xl rounded-3xl mt-4 sm:mt-6 mb-8 sm:mb-10 py-8 sm:py-10 px-8 sm:px-12 cursor-pointer select-none bg-zinc-950/90 border transition-all duration-300 shadow-2xl backdrop-blur-md group overflow-hidden ${
+              isInputFocused 
+                ? 'border-zinc-800 ring-1 ring-zinc-800/60' 
+                : 'border-zinc-800/80 hover:border-zinc-700'
+            }`}
           >
+            {/* Blurry state overlay if cursor is not inside the practice box */}
+            {!isInputFocused && (
+              <div 
+                onClick={focusInput}
+                className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-zinc-950/45 backdrop-blur-[3px] rounded-3xl cursor-pointer animate-in fade-in duration-200"
+              >
+                <div className="flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-zinc-900 border border-zinc-700/80 text-zinc-100 shadow-2xl hover:border-accent hover:bg-zinc-850 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group">
+                  <MousePointerClick className="w-4 h-4 text-accent group-hover:scale-110 transition-transform" />
+                  <span className="text-sm font-semibold tracking-wide">Click here to start typing</span>
+                </div>
+                <span className="text-[11px] text-zinc-400 mt-2 font-mono">or press any key to focus</span>
+              </div>
+            )}
+
             {/* Hidden Input for Keyboard Capture (Touch + Physical) */}
             <input
               ref={inputRef}
@@ -928,13 +1017,17 @@ export const PracticeView: React.FC = () => {
               spellCheck="false"
               className="absolute opacity-0 -top-40 left-0 w-1 h-1 pointer-events-none"
               onKeyDown={handleKeyDown}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => setIsInputFocused(false)}
               tabIndex={0}
             />
 
             {/* Focused Linear Typing View (Sliding Window: Current & Next Line) */}
             <div
               ref={textContainerRef}
-              className={`relative overflow-hidden select-none font-normal text-center transition-colors px-4 sm:px-6 ${fontSizeClass}`}
+              className={`relative overflow-hidden select-none font-normal text-center transition-all duration-300 px-4 sm:px-6 ${
+                !isInputFocused ? 'filter blur-[5px] opacity-25 pointer-events-none select-none' : 'filter-none opacity-100'
+              } ${fontSizeClass}`}
               style={{
                 fontFamily: 'var(--font-custom)',
                 height: `${lineHeightPx * 2}px`
@@ -1069,11 +1162,11 @@ export const PracticeView: React.FC = () => {
               </div>
             )}
 
-            {/* Click to Focus Hint on Idle */}
-            {!isTestActive && typedText.length === 0 && (
+            {/* Subtle Hint on Idle when focused */}
+            {isInputFocused && !isTestActive && typedText.length === 0 && (
               <div className="absolute inset-x-0 bottom-3 text-center pointer-events-none">
-                <span className="text-[11px] text-zinc-400/70 tracking-wide font-medium">
-                  Click here or press any key to start typing
+                <span className="text-[11px] text-zinc-500 tracking-wide font-medium">
+                  Start typing to begin test · timer starts on first key
                 </span>
               </div>
             )}
