@@ -23,7 +23,6 @@ import {
   Sparkles,
   SlidersHorizontal,
   ChevronDown,
-  Ghost,
   EyeOff
 } from 'lucide-react';
 
@@ -130,7 +129,6 @@ export const PracticeView: React.FC = () => {
     setTypedText('');
     setIsTestActive(false);
     setContextTestActive(false);
-    setGhostIndex(0);
     setIsTestFinished(false);
     setStartTime(null);
     setElapsedSeconds(0);
@@ -581,25 +579,6 @@ export const PracticeView: React.FC = () => {
     return 60; // Default gentle pacing baseline if no prior tests recorded
   }, [results, mode, personalBestWpm]);
 
-  // Ghosting progress in characters based on previous best WPM
-  const [ghostIndex, setGhostIndex] = useState<number>(0);
-
-  useEffect(() => {
-    if (!isTestActive || !startTime || !settings.ghostingEnabled) {
-      setGhostIndex(0);
-      return;
-    }
-
-    const interval = setInterval(() => {
-      const elapsedSec = (Date.now() - startTime) / 1000;
-      // Target characters = (WPM * 5 chars per word) * (elapsedSec / 60)
-      const targetChars = Math.floor((previousBestWpm * 5) * (elapsedSec / 60));
-      setGhostIndex(Math.min(targetText.length, targetChars));
-    }, 60);
-
-    return () => clearInterval(interval);
-  }, [isTestActive, startTime, settings.ghostingEnabled, previousBestWpm, targetText.length]);
-
   // Font size mapping for typing text
   const fontSizeClass = useMemo(() => {
     switch (settings.fontSize) {
@@ -803,20 +782,6 @@ export const PracticeView: React.FC = () => {
                 <EyeOff className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline text-[11px]">Focus Mode</span>
               </button>
-
-              {/* Ghosting Pacer Toggle */}
-              <button
-                onClick={() => updateSettings({ ghostingEnabled: !settings.ghostingEnabled })}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl transition-all cursor-pointer text-xs font-medium border ${
-                  settings.ghostingEnabled
-                    ? 'text-accent bg-zinc-800 border-zinc-700 font-semibold shadow-xs'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border-transparent'
-                }`}
-                title={`Ghosting Pacer: Shows previous best pace (${previousBestWpm} WPM) as translucent text layer`}
-              >
-                <Ghost className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline text-[11px]">Ghost ({previousBestWpm})</span>
-              </button>
             </div>
           </div>
 
@@ -987,9 +952,6 @@ export const PracticeView: React.FC = () => {
                             const isCorrect = isTyped && typedText[letter.index] === letter.char;
                             const isIncorrect = isTyped && !isCorrect;
 
-                            // Ghosting pacing calculations
-                            const isGhostCaret = settings.ghostingEnabled && isTestActive && letter.index === ghostIndex;
-
                             return (
                               <span
                                 key={letter.index}
@@ -1006,14 +968,6 @@ export const PracticeView: React.FC = () => {
                                         : 'text-zinc-500'
                                 }`}
                               >
-                                {/* Smooth Moving Ghost Caret Line */}
-                                {isGhostCaret && (
-                                  <span 
-                                    className="absolute -left-[1.5px] top-[12%] h-[76%] w-[2px] bg-accent/60 rounded-full pointer-events-none shadow-[0_0_8px_var(--accent-color)] z-10 transition-all duration-100 ease-linear opacity-80"
-                                    title={`Ghost Pacer (${previousBestWpm} WPM)`}
-                                  />
-                                )}
-
                                 {/* Render active caret before current untyped character */}
                                 {isCurrent && (
                                   <span className={`absolute ${caretClasses}`} />
@@ -1026,21 +980,12 @@ export const PracticeView: React.FC = () => {
 
                           {/* Trailing space after word */}
                           {wordObj.hasSpace && (() => {
-                            const isGhostSpaceCaret = settings.ghostingEnabled && isTestActive && wordObj.spaceIndex === ghostIndex;
                             const isSpaceCurrent = wordObj.spaceIndex === typedText.length;
                             return (
                               <span
                                 ref={isSpaceCurrent ? activeCharRef : null}
                                 className="relative inline-block w-[0.25em]"
                               >
-                                {/* Smooth Moving Ghost Space Caret Line */}
-                                {isGhostSpaceCaret && (
-                                  <span 
-                                    className="absolute -left-[1.5px] top-[12%] h-[76%] w-[2px] bg-accent/60 rounded-full pointer-events-none shadow-[0_0_8px_var(--accent-color)] z-10 transition-all duration-100 ease-linear opacity-80"
-                                    title={`Ghost Pacer (${previousBestWpm} WPM)`}
-                                  />
-                                )}
-
                                 {isSpaceCurrent && (
                                   <span className={`absolute ${settings.caretStyle === 'block' ? 'inset-0 w-[0.55em] -left-[1px] bg-accent/85 rounded-xs animate-caret-pulse z-0 pointer-events-none shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]' : caretClasses}`} />
                                 )}

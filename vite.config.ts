@@ -8,8 +8,13 @@ export default defineConfig(() => {
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, '.'),
+        '@': path.resolve('.'),
       },
+    },
+    build: {
+      outDir: 'dist',
+      sourcemap: false,
+      chunkSizeWarningLimit: 1600,
     },
     server: {
       cors: true,

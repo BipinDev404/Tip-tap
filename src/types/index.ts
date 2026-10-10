@@ -26,7 +26,6 @@ export interface UserSettings {
   smoothCaret: boolean;
   blindMode: boolean; // Monkeytype blind mode (no error highlighting until end)
   focusMode: boolean; // Hides header, footer, and stats during test for distraction-free mode
-  ghostingEnabled: boolean; // Displays previous best performance as translucent text pacing layer
 }
 
 export interface KeystrokeSample {

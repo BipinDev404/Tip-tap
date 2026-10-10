@@ -506,12 +506,6 @@ export const SettingsView: React.FC = () => {
                 val: settings.focusMode
               },
               {
-                id: 'ghostingEnabled' as const,
-                title: 'Ghosting Pacer',
-                desc: 'Pace against your personal best WPM',
-                val: settings.ghostingEnabled
-              },
-              {
                 id: 'reducedMotion' as const,
                 title: 'Reduced Motion',
                 desc: 'Disable sliding lines and animations',

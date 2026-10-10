@@ -17,8 +17,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   reducedMotion: false,
   smoothCaret: true,
   blindMode: false,
-  focusMode: false,
-  ghostingEnabled: false
+  focusMode: false
 };
 
 export const INITIAL_DATA: TipTapUserData = {
