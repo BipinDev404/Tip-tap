@@ -19,7 +19,8 @@ export const LearnView: React.FC = () => {
     activeLesson, 
     setActiveLesson,
     setPracticeTargetWords,
-    setActiveTab
+    setActiveTab,
+    updateSettings
   } = useApp();
 
   // All lessons flat list
@@ -57,6 +58,7 @@ export const LearnView: React.FC = () => {
 
   // When user clicks a lesson, start practice directly in the practice view or lesson modal
   const handleLaunchPractice = (lesson: Lesson, mode: 'modal' | 'practice') => {
+    updateSettings({ showVirtualKeyboard: true });
     if (mode === 'practice') {
       setPracticeTargetWords(lesson.text);
       setActiveTab('practice');

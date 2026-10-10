@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp, NavigationTab } from '../context/AppContext';
+import { StreakCounter } from './StreakCounter';
 import { 
   Volume2, 
   VolumeX, 
@@ -18,7 +19,8 @@ export const Header: React.FC = () => {
     settings, 
     updateSettings, 
     overallLevel,
-    setIsShortcutsOpen 
+    setIsShortcutsOpen,
+    setIsStreakModalOpen
   } = useApp();
 
   const isSoundActive = settings.soundEnabled && settings.sound !== 'off';
@@ -45,17 +47,17 @@ export const Header: React.FC = () => {
     <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-zinc-950/85 border-b border-zinc-800/80 transition-colors">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-8">
         
-        {/* Zone 1: Simple Tip Tap Logo with Keyboard Icon */}
+        {/* Zone 1: Simple tipTap Logo with Keyboard Icon */}
         <button 
           onClick={() => setActiveTab('practice')}
           className="flex items-center gap-2.5 group text-left cursor-pointer focus:outline-none select-none"
-          title="Tip tap Home"
+          title="tipTap Home"
         >
           <div className="w-8 h-8 rounded-xl bg-zinc-900 border border-zinc-800 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform duration-200 shrink-0">
             <Keyboard className="w-4.5 h-4.5 text-accent" />
           </div>
-          <span className="text-base font-bold tracking-tight text-zinc-100 whitespace-nowrap">
-            Tip tap
+          <span className="text-base font-bold tracking-tight text-zinc-100 whitespace-nowrap font-brand">
+            tipTap
           </span>
         </button>
 
@@ -82,6 +84,9 @@ export const Header: React.FC = () => {
 
         {/* Zone 3: Quick Action & Profile Status */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Reusable Pill-Shaped StreakCounter */}
+          <StreakCounter onClick={() => setIsStreakModalOpen(true)} />
+
           {/* Level badge */}
           <button
             onClick={() => setActiveTab('progress')}

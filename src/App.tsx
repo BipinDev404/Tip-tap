@@ -11,6 +11,7 @@ import { LearnView } from './components/Learn/LearnView';
 import { ProgressView } from './components/Progress/ProgressView';
 import { SettingsView } from './components/Settings/SettingsView';
 import { ShortcutsModal } from './components/ShortcutsModal';
+import { StreakModal } from './components/StreakModal';
 
 const AppContent: React.FC = () => {
   const { activeTab, setIsShortcutsOpen, settings, isTestActive } = useApp();
@@ -35,11 +36,14 @@ const AppContent: React.FC = () => {
       {/* Shortcuts Modal */}
       <ShortcutsModal />
 
+      {/* Realistic Daily Streak Modal */}
+      <StreakModal />
+
       {/* Minimalist Apple-inspired Footer - Smoothly hides in Focus Mode during active typing */}
       <footer className={`w-full py-6 px-4 border-t border-zinc-200/60 dark:border-zinc-800/60 mt-auto text-center text-xs text-zinc-500 dark:text-zinc-500 transition-all duration-300 ease-in-out ${isFocusModeActive ? 'opacity-0 translate-y-full pointer-events-none max-h-0 py-0 overflow-hidden border-transparent' : 'opacity-100 translate-y-0'}`}>
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-zinc-700 dark:text-zinc-300">Tip tap</span>
+            <span className="font-semibold text-zinc-700 dark:text-zinc-300 font-brand">tipTap</span>
             <span>·</span>
             <span>Distraction-free typing excellence</span>
           </div>

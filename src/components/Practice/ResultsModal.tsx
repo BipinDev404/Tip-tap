@@ -44,13 +44,39 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const history: KeystrokeSample[] = useMemo(() => {
-    if (result.history && result.history.length > 0) {
-      return result.history;
+    let list: KeystrokeSample[] = Array.isArray(result.history) && result.history.length > 0 
+      ? [...result.history] 
+      : [];
+
+    // Ensure initial point 0 exists
+    if (list.length > 0 && list[0].second > 0) {
+      list = [{ second: 0, wpm: 0, rawWpm: 0, errors: 0 }, ...list];
     }
-    return [
-      { second: 0, wpm: 0, rawWpm: 0, errors: 0 },
-      { second: result.durationSeconds, wpm: result.wpm, rawWpm: result.rawWpm, errors: result.characters.incorrect }
-    ];
+
+    if (list.length >= 2) {
+      return list;
+    }
+
+    // Comprehensive fallback if history only had 1 point or empty
+    const dur = Math.max(2, result.durationSeconds || 10);
+    const fallbackList: KeystrokeSample[] = [];
+    fallbackList.push({ second: 0, wpm: 0, rawWpm: 0, errors: 0 });
+
+    const steps = Math.min(dur, 10);
+    for (let i = 1; i <= steps; i++) {
+      const sec = Math.round((i / steps) * dur);
+      const progress = i / steps;
+      const accel = Math.sin((progress * Math.PI) / 2);
+      const curWpm = Math.max(5, Math.round(result.wpm * accel));
+      const curRaw = Math.max(curWpm, Math.round(result.rawWpm * accel));
+      fallbackList.push({
+        second: sec,
+        wpm: i === steps ? result.wpm : curWpm,
+        rawWpm: i === steps ? result.rawWpm : curRaw,
+        errors: i === steps ? result.characters.incorrect : 0
+      });
+    }
+    return fallbackList;
   }, [result]);
 
   // Performance calculations
@@ -221,13 +247,13 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
 
     // Brand Lockup Header
     ctx.fillStyle = '#f4f4f5';
-    ctx.font = 'bold 30px -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif';
+    ctx.font = 'bold 30px "Work Sans", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText('Tip tap', 64, 80);
+    ctx.fillText('tipTap', 64, 80);
 
     ctx.fillStyle = '#71717a';
     ctx.font = '500 18px -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif';
-    ctx.fillText('· Typing Result', 180, 80);
+    ctx.fillText('· Typing Result', 170, 80);
 
     // Mode Pill Badge Top Right
     ctx.fillStyle = '#18181b';
@@ -321,9 +347,9 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
 
     // Footer
     ctx.fillStyle = '#52525b';
-    ctx.font = '13px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.font = '13px "Work Sans", -apple-system, BlinkMacSystemFont, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('tiptap.app · Premium Typing Experience', 600, 580);
+    ctx.fillText('tipTap · Premium Typing Experience', 600, 580);
 
     return canvas.toDataURL('image/png');
   };
@@ -364,7 +390,7 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
 
   // Copy text summary
   const handleCopyText = () => {
-    const text = `Tip tap typing test: ${result.wpm} WPM · ${result.accuracy}% accuracy (${result.modeValue} ${result.mode})`;
+    const text = `tipTap typing test: ${result.wpm} WPM · ${result.accuracy}% accuracy (${result.modeValue} ${result.mode})`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text);
       setCopiedText(true);
@@ -537,7 +563,7 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-accent" />
               <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
-                Speed Timeline
+                Speed Progression
               </span>
             </div>
 
@@ -561,9 +587,9 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
               className="w-full h-36 sm:h-44 overflow-visible select-none"
             >
               <defs>
-                <linearGradient id="wpmGradientArea" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--accent-color)" stopOpacity="0.2" />
-                  <stop offset="100%" stopColor="var(--accent-color)" stopOpacity="0.0" />
+                <linearGradient id={`wpmGradientArea-${result.id}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={wpmStyle.canvasHex} stopOpacity="0.28" />
+                  <stop offset="100%" stopColor={wpmStyle.canvasHex} stopOpacity="0.0" />
                 </linearGradient>
               </defs>
 
@@ -582,7 +608,7 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
               </text>
 
               {areaPathStr && (
-                <path d={areaPathStr} fill="url(#wpmGradientArea)" />
+                <path d={areaPathStr} fill={`url(#wpmGradientArea-${result.id})`} />
               )}
 
               {rawPathStr && (
@@ -590,7 +616,7 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
                   d={rawPathStr}
                   fill="none"
                   stroke="#71717a"
-                  strokeWidth="1.5"
+                  strokeWidth="1.6"
                   strokeDasharray="4 4"
                   strokeLinecap="round"
                 />
@@ -600,8 +626,8 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
                 <path
                   d={wpmPathStr}
                   fill="none"
-                  stroke="var(--accent-color)"
-                  strokeWidth="2.8"
+                  stroke={wpmStyle.canvasHex}
+                  strokeWidth="3"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -617,7 +643,7 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
                       cx={ptObj.x}
                       cy={ptObj.y}
                       r={isHovered ? "6" : hasErrors ? "3.5" : "2.5"}
-                      fill={hasErrors ? "#f43f5e" : "var(--accent-color)"}
+                      fill={hasErrors ? "#f43f5e" : wpmStyle.canvasHex}
                       stroke={isHovered ? "#ffffff" : "none"}
                       strokeWidth="2"
                       className="cursor-pointer transition-all duration-150"
@@ -628,6 +654,29 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
                 );
               })}
             </svg>
+
+            {/* Bottom Chart Legend */}
+            <div className="flex items-center justify-between pt-2 border-t border-zinc-800/60 text-[11px] text-zinc-500">
+              <div className="flex items-center gap-4 flex-wrap">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3.5 h-0.5 rounded-full" style={{ backgroundColor: wpmStyle.canvasHex }}></span>
+                  <span className="text-zinc-300 font-medium">Net WPM</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3.5 h-0.5 rounded-full bg-zinc-500 border-b border-dashed border-zinc-400"></span>
+                  <span>Raw WPM</span>
+                </span>
+                {result.characters.incorrect > 0 && (
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                    <span className="text-rose-400 font-medium">Errors ({result.characters.incorrect})</span>
+                  </span>
+                )}
+              </div>
+              <span className="text-zinc-500 tabular-nums">
+                Hover points for second-by-second details
+              </span>
+            </div>
 
             {/* Hover Tooltip Card */}
             {hoveredIndex !== null && pointsWpm[hoveredIndex] && (

@@ -12,9 +12,12 @@ import {
 import { 
   Trophy, 
   TrendingUp, 
-  Calendar,
   Sparkles,
-  Activity
+  Activity,
+  Flame,
+  Zap,
+  CheckCircle2,
+  Target
 } from 'lucide-react';
 
 export const ProgressView: React.FC = () => {
@@ -24,6 +27,8 @@ export const ProgressView: React.FC = () => {
     overallLevel, 
     personalBestWpm, 
     weakKeysCounter,
+    streakInfo,
+    setIsStreakModalOpen,
     setPracticeTargetWords,
     setActiveTab
   } = useApp();
@@ -64,30 +69,6 @@ export const ProgressView: React.FC = () => {
       .sort((a, b) => b[1] - a[1]);
     return entries.slice(0, 5);
   }, [weakKeysCounter]);
-
-  // Practice activity calendar for past 28 days
-  const activityDays = useMemo(() => {
-    const days: { dateStr: string; count: number }[] = [];
-    const now = new Date();
-
-    const testCountsByDate: Record<string, number> = {};
-    results.forEach(r => {
-      const d = new Date(r.timestamp).toISOString().slice(0, 10);
-      testCountsByDate[d] = (testCountsByDate[d] || 0) + 1;
-    });
-
-    for (let i = 27; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().slice(0, 10);
-      days.push({
-        dateStr,
-        count: testCountsByDate[dateStr] || 0
-      });
-    }
-
-    return days;
-  }, [results]);
 
   // WPM Progression Data for last 10 sessions (chronological order)
   const last10Results = useMemo(() => {
@@ -364,46 +345,89 @@ export const ProgressView: React.FC = () => {
         </div>
       </div>
 
-      {/* 28-Day Activity Heat Strip */}
-      <div className="mb-10">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-accent" />
-            <h2 className="text-sm font-semibold text-zinc-100">
-              Activity History
-            </h2>
-          </div>
-          <span className="text-xs text-zinc-400">
-            Last 4 weeks
-          </span>
-        </div>
+      {/* DAILY PRACTICE STREAK & GOAL CARD */}
+      <div className="mb-10 p-6 rounded-3xl bg-zinc-900/80 border border-zinc-800 shadow-xl backdrop-blur-md">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          
+          {/* Left: Flame Counter & Record */}
+          <div className="flex items-center gap-4">
+            <div className={`p-4 rounded-2xl border flex items-center justify-center shrink-0 ${
+              streakInfo.currentStreak > 0
+                ? 'bg-amber-500/15 border-amber-500/30 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.25)]'
+                : 'bg-zinc-800/80 border-zinc-700 text-zinc-500'
+            }`}>
+              <Flame className={`w-8 h-8 ${streakInfo.currentStreak > 0 ? 'fill-amber-400 animate-pulse' : ''}`} />
+            </div>
 
-        <div className="grid grid-cols-7 sm:grid-cols-14 gap-1.5">
-          {activityDays.map((day) => {
-            const hasActivity = day.count > 0;
-            return (
-              <div
-                key={day.dateStr}
-                className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-lg border transition-all text-center ${
-                  day.count >= 5
-                    ? 'bg-accent text-white border-accent'
-                    : day.count >= 2
-                      ? 'bg-zinc-800 text-zinc-200 border-zinc-700'
-                      : day.count === 1
-                        ? 'bg-zinc-850 text-zinc-300 border-zinc-800'
-                        : 'bg-zinc-950 text-zinc-600 border-zinc-850'
-                }`}
-                title={`${day.dateStr}: ${day.count} tests`}
-              >
-                <span className="text-[10px] font-mono leading-none">
-                  {day.dateStr.slice(8)}
-                </span>
-                <span className="text-[9px] mt-1 opacity-70">
-                  {hasActivity ? `${day.count}` : '·'}
-                </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl sm:text-3xl font-black text-zinc-100 tabular-nums">
+                  {streakInfo.currentStreak} {streakInfo.currentStreak === 1 ? 'Day' : 'Days'} Streak
+                </h2>
+                {streakInfo.isGoalAchieved && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                    <CheckCircle2 className="w-3 h-3" />
+                    Goal Achieved
+                  </span>
+                )}
               </div>
-            );
-          })}
+
+              <div className="flex items-center gap-3 text-xs text-zinc-400 mt-1 flex-wrap">
+                <span className="flex items-center gap-1 font-semibold text-zinc-300">
+                  <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                  Longest: {streakInfo.longestStreak} {streakInfo.longestStreak === 1 ? 'day' : 'days'}
+                </span>
+                <span className="text-zinc-600">·</span>
+                <span className="flex items-center gap-1">
+                  <Target className="w-3.5 h-3.5 text-accent" />
+                  Daily Goal: {streakInfo.todayCount}/{streakInfo.dailyGoal} tests today
+                </span>
+                <span className="text-zinc-600">·</span>
+                <button
+                  type="button"
+                  onClick={() => setIsStreakModalOpen(true)}
+                  className="font-semibold text-amber-400 hover:text-amber-300 hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <Flame className="w-3.5 h-3.5 fill-amber-400" />
+                  <span>Streak Calendar</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: 7-Day Weekly Streak Strip */}
+          <div className="flex flex-col gap-1.5 pt-4 lg:pt-0 border-t lg:border-t-0 border-zinc-800">
+            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              This Week's Activity
+            </span>
+            <div className="flex items-center gap-2">
+              {streakInfo.thisWeekDays.map((day) => (
+                <div 
+                  key={day.dateStr}
+                  className={`flex flex-col items-center justify-center w-10 sm:w-11 h-12 rounded-2xl border text-center transition-all ${
+                    day.isActive
+                      ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 shadow-sm'
+                      : day.isToday
+                        ? 'bg-zinc-800 border-zinc-600 text-zinc-200 ring-1 ring-zinc-500'
+                        : 'bg-zinc-950 border-zinc-850 text-zinc-600'
+                  }`}
+                  title={`${day.dayName} (${day.dateStr}): ${day.isActive ? 'Practiced' : 'No practice'}`}
+                >
+                  <span className="text-[10px] font-mono font-bold uppercase">
+                    {day.dayName}
+                  </span>
+                  <div className="mt-1">
+                    {day.isActive ? (
+                      <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                    ) : (
+                      <span className="text-[10px] text-zinc-600 font-mono">·</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
 

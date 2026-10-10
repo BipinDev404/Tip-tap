@@ -13,6 +13,15 @@ import { soundManager } from '../utils/audio';
 
 export type NavigationTab = 'practice' | 'learn' | 'progress' | 'settings';
 
+export interface StreakInfo {
+  currentStreak: number;
+  longestStreak: number;
+  todayCount: number;
+  dailyGoal: number;
+  isGoalAchieved: boolean;
+  thisWeekDays: { dayName: string; dateStr: string; isActive: boolean; isToday: boolean }[];
+}
+
 interface AppContextType {
   activeTab: NavigationTab;
   setActiveTab: (tab: NavigationTab) => void;
@@ -35,8 +44,11 @@ interface AppContextType {
   resetAllData: () => void;
   personalBestWpm: number;
   overallLevel: { level: number; title: string; progress: number; nextLevelAt: number };
+  streakInfo: StreakInfo;
   isShortcutsOpen: boolean;
   setIsShortcutsOpen: (open: boolean) => void;
+  isStreakModalOpen: boolean;
+  setIsStreakModalOpen: (open: boolean) => void;
   isTestActive: boolean;
   setIsTestActive: (active: boolean) => void;
 }
@@ -49,6 +61,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [practiceTargetWords, setPracticeTargetWords] = useState<string | null>(null);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
   const [isTestActive, setIsTestActive] = useState(false);
 
   // Sync to localStorage
@@ -236,6 +249,115 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [data.results, data.lessonProgress]);
 
+  // Compute Daily Practice Streak Info
+  const streakInfo: StreakInfo = useMemo(() => {
+    const dailyGoal = 3;
+    const results = data.results;
+
+    if (!results || results.length === 0) {
+      const today = new Date();
+      const thisWeekDays = [];
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toLocaleDateString('en-CA');
+        thisWeekDays.push({
+          dayName: dayNames[d.getDay()],
+          dateStr,
+          isActive: false,
+          isToday: i === 0
+        });
+      }
+      return {
+        currentStreak: 0,
+        longestStreak: 0,
+        todayCount: 0,
+        dailyGoal,
+        isGoalAchieved: false,
+        thisWeekDays
+      };
+    }
+
+    const dateSet = new Set<string>();
+    const countByDate: Record<string, number> = {};
+
+    results.forEach(r => {
+      const dStr = new Date(r.timestamp).toLocaleDateString('en-CA');
+      dateSet.add(dStr);
+      countByDate[dStr] = (countByDate[dStr] || 0) + 1;
+    });
+
+    const todayStr = new Date().toLocaleDateString('en-CA');
+    const todayCount = countByDate[todayStr] || 0;
+
+    let currentStreak = 0;
+    let checkDate = new Date();
+
+    if (dateSet.has(todayStr)) {
+      while (dateSet.has(checkDate.toLocaleDateString('en-CA'))) {
+        currentStreak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+    } else {
+      checkDate.setDate(checkDate.getDate() - 1);
+      const yesterdayStr = checkDate.toLocaleDateString('en-CA');
+      if (dateSet.has(yesterdayStr)) {
+        while (dateSet.has(checkDate.toLocaleDateString('en-CA'))) {
+          currentStreak++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        }
+      }
+    }
+
+    const sortedDates = Array.from(dateSet).sort();
+    let longestStreak = 0;
+    let tempStreak = 0;
+    let prevDate: Date | null = null;
+
+    sortedDates.forEach(dStr => {
+      const currDate = new Date(dStr);
+      if (!prevDate) {
+        tempStreak = 1;
+      } else {
+        const diffDays = Math.round((currDate.getTime() - prevDate.getTime()) / (1000 * 3600 * 24));
+        if (diffDays === 1) {
+          tempStreak++;
+        } else {
+          tempStreak = 1;
+        }
+      }
+      prevDate = currDate;
+      if (tempStreak > longestStreak) {
+        longestStreak = tempStreak;
+      }
+    });
+
+    const today = new Date();
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const thisWeekDays = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toLocaleDateString('en-CA');
+      thisWeekDays.push({
+        dayName: dayNames[d.getDay()],
+        dateStr,
+        isActive: dateSet.has(dateStr),
+        isToday: i === 0
+      });
+    }
+
+    return {
+      currentStreak,
+      longestStreak: Math.max(longestStreak, currentStreak),
+      todayCount,
+      dailyGoal,
+      isGoalAchieved: todayCount >= dailyGoal,
+      thisWeekDays
+    };
+  }, [data.results]);
+
   // Global keyboard shortcuts: Esc to close modal/exit, ? for shortcuts
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
@@ -274,8 +396,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         resetAllData,
         personalBestWpm,
         overallLevel,
+        streakInfo,
         isShortcutsOpen,
         setIsShortcutsOpen,
+        isStreakModalOpen,
+        setIsStreakModalOpen,
         isTestActive,
         setIsTestActive
       }}

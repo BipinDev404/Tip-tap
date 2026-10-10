@@ -149,26 +149,26 @@ export const LessonModal: React.FC<LessonModalProps> = ({
   const existingProg = lessonProgress[lesson.id];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
       <div 
-        className="w-full max-w-3xl rounded-3xl bg-zinc-900 border border-zinc-800 shadow-2xl p-6 sm:p-8 flex flex-col max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-4xl rounded-2xl bg-zinc-950 border border-zinc-800/90 shadow-2xl p-4 sm:p-6 flex flex-col justify-between my-auto max-h-[98vh] overflow-y-auto"
         onClick={() => inputRef.current?.focus()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
+        <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs uppercase tracking-wider text-accent font-semibold">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-[11px] uppercase tracking-wider text-accent font-semibold">
                 Lesson Drill
               </span>
               {existingProg?.completed && (
                 <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 font-medium">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Passed (Best: {existingProg.bestWpm} WPM)
+                  <CheckCircle2 className="w-3 h-3" />
+                  Passed ({existingProg.bestWpm} WPM)
                 </span>
               )}
             </div>
-            <h2 className="text-xl font-bold text-zinc-100">
+            <h2 className="text-lg sm:text-xl font-bold text-zinc-100">
               {lesson.title}
             </h2>
           </div>
@@ -181,22 +181,24 @@ export const LessonModal: React.FC<LessonModalProps> = ({
           </button>
         </div>
 
-        {/* Lesson Explanations & Finger Tips */}
-        <div className="mt-4 p-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-xs space-y-2">
-          <p className="text-zinc-300 leading-relaxed">
-            {lesson.explanation}
-          </p>
-          <div className="flex items-start gap-1.5 text-accent font-medium">
-            <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-            <span>Finger guidance: {lesson.fingerTips}</span>
+        {/* Compact Lesson Guidance Banner */}
+        <div className="mt-3 p-3 rounded-xl bg-zinc-900/90 border border-zinc-800 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="space-y-0.5">
+            <p className="text-zinc-300 font-medium line-clamp-1">
+              {lesson.explanation}
+            </p>
+            <div className="flex items-center gap-1.5 text-accent text-[11px]">
+              <Info className="w-3.5 h-3.5 shrink-0" />
+              <span>Finger guidance: {lesson.fingerTips}</span>
+            </div>
           </div>
-          <div className="text-[11px] text-zinc-500">
-            Goal: &ge; {lesson.minAccuracy}% accuracy and &ge; {lesson.minWpm} WPM
+          <div className="text-[11px] font-mono text-zinc-400 whitespace-nowrap bg-zinc-950 px-2.5 py-1 rounded-lg border border-zinc-800 shrink-0">
+            Goal: &ge; {lesson.minAccuracy}% acc · &ge; {lesson.minWpm} WPM
           </div>
         </div>
 
         {/* Typing Stage */}
-        <div className="relative my-6 p-6 rounded-2xl bg-zinc-950 border border-zinc-800 cursor-text select-none min-h-[140px] flex items-center justify-center shadow-inner">
+        <div className="relative my-4 p-5 sm:p-6 rounded-xl bg-zinc-900/90 border border-zinc-800/80 cursor-text select-none min-h-[110px] sm:min-h-[130px] flex items-center justify-center shadow-inner">
           <input
             ref={inputRef}
             type="text"
@@ -210,7 +212,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
             autoFocus
           />
 
-          <div className="text-xl sm:text-2xl font-mono leading-relaxed text-center tracking-wide">
+          <div className="text-lg sm:text-2xl font-mono leading-relaxed text-center tracking-wide">
             {targetText.split('').map((char, idx) => {
               const isTyped = idx < typedText.length;
               const isCurrent = idx === typedText.length;
@@ -238,9 +240,9 @@ export const LessonModal: React.FC<LessonModalProps> = ({
           </div>
         </div>
 
-        {/* Completion Card or Keyboard Guide */}
+        {/* Completion Card or Full Virtual Keyboard */}
         {isCompleted ? (
-          <div className="p-6 rounded-2xl bg-zinc-950 border border-zinc-800 text-center animate-in zoom-in-95 duration-200">
+          <div className="p-5 sm:p-6 rounded-xl bg-zinc-900/90 border border-zinc-800 text-center animate-in zoom-in-95 duration-200">
             <div className="flex justify-center items-center gap-1.5 mb-2">
               {[1, 2, 3].map(starNum => (
                 <Star
@@ -258,20 +260,20 @@ export const LessonModal: React.FC<LessonModalProps> = ({
               {passedCriteria ? 'Lesson Completed!' : 'Almost There!'}
             </h3>
 
-            <p className="text-xs text-zinc-400 mt-1 mb-4">
+            <p className="text-xs text-zinc-400 mt-1 mb-3">
               {passedCriteria 
-                ? 'Excellent muscle memory technique. Ready for next drill!'
-                : `Target criteria was ${lesson.minAccuracy}% accuracy & ${lesson.minWpm} WPM. Let's try again!`}
+                ? 'Excellent technique! Muscle memory updated.'
+                : `Target criteria was ${lesson.minAccuracy}% accuracy & ${lesson.minWpm} WPM.`}
             </p>
 
-            <div className="flex justify-center items-center gap-6 text-sm tabular-nums mb-6">
+            <div className="flex justify-center items-center gap-6 text-sm tabular-nums mb-5">
               <div>
-                <span className="text-xs text-zinc-400 block">Speed</span>
+                <span className="text-[11px] text-zinc-400 block">Speed</span>
                 <span className="text-xl font-bold text-accent">{completionStats.wpm} WPM</span>
               </div>
               <div className="h-8 w-px bg-zinc-800" />
               <div>
-                <span className="text-xs text-zinc-400 block">Accuracy</span>
+                <span className="text-[11px] text-zinc-400 block">Accuracy</span>
                 <span className="text-xl font-bold text-emerald-400">{completionStats.accuracy}%</span>
               </div>
             </div>
@@ -288,7 +290,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
               {passedCriteria && onNextLesson && (
                 <button
                   onClick={onNextLesson}
-                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-semibold bg-accent hover:opacity-90 text-white shadow-md transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-semibold bg-accent hover:opacity-90 text-white shadow-md transition-all cursor-pointer"
                 >
                   <span>Next Lesson</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -302,17 +304,17 @@ export const LessonModal: React.FC<LessonModalProps> = ({
               expectedKey={expectedChar}
               activeKeyPressed={lastKeyPressed}
               highlightFingers={true}
-              compact={true}
+              compact={false}
             />
           </div>
         )}
 
         {/* Footer actions */}
-        <div className="flex items-center justify-between pt-4 mt-4 border-t border-zinc-800 text-xs text-zinc-400">
-          <span>Press <kbd className="px-2 py-0.5 rounded-md bg-zinc-950 border border-zinc-800 font-mono text-[10px] text-zinc-300">Esc</kbd> to exit</span>
+        <div className="flex items-center justify-between pt-3 mt-3 border-t border-zinc-800/80 text-xs text-zinc-400">
+          <span>Press <kbd className="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800 font-mono text-[10px] text-zinc-300">Esc</kbd> to exit</span>
           <button
             onClick={resetLesson}
-            className="flex items-center gap-1.5 hover:text-zinc-200 cursor-pointer"
+            className="flex items-center gap-1.5 hover:text-zinc-200 cursor-pointer text-xs"
           >
             <RotateCcw className="w-3.5 h-3.5 text-accent" />
             <span>Reset Drill</span>

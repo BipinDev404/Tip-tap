@@ -4,6 +4,7 @@
   :root {
     --font-apple: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --font-custom: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-brand: 'Work Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --accent-light: #3b82f6;
     --accent-dark: #60a5fa;
     --accent-color: #60a5fa;
@@ -22,6 +23,11 @@
     background-color: #09090b;
     color: #f4f4f5;
   }
+}
+
+/* Brand Font Utility: Work Sans specifically for tipTap app name */
+.font-brand {
+  font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }
 
 /* Dynamic Accent Utilities */
