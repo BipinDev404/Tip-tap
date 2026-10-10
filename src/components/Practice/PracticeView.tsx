@@ -23,8 +23,7 @@ import {
   Sparkles,
   SlidersHorizontal,
   ChevronDown,
-  EyeOff,
-  MousePointerClick
+  EyeOff
 } from 'lucide-react';
 
 export const PracticeView: React.FC = () => {
@@ -1038,20 +1037,6 @@ export const PracticeView: React.FC = () => {
                 : 'border-zinc-800/80 hover:border-zinc-700'
             }`}
           >
-            {/* Blurry state overlay if cursor is not inside the practice box */}
-            {!isInputFocused && (
-              <div 
-                onClick={focusInput}
-                className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-zinc-950/50 backdrop-blur-[3px] rounded-2xl sm:rounded-3xl cursor-pointer animate-in fade-in duration-200 p-4 text-center touch-manipulation"
-              >
-                <div className="flex items-center gap-2 sm:gap-2.5 px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl bg-zinc-900 border border-zinc-700/80 text-zinc-100 shadow-2xl hover:border-accent hover:bg-zinc-850 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group">
-                  <MousePointerClick className="w-4 h-4 text-accent group-hover:scale-110 transition-transform" />
-                  <span className="text-xs sm:text-sm font-semibold tracking-wide">Tap or click here to start typing</span>
-                </div>
-                <span className="text-[10px] sm:text-[11px] text-zinc-400 mt-2 font-mono">or tap anywhere to open keyboard</span>
-              </div>
-            )}
-
             {/* Transparent Input covering the typing stage on mobile/desktop */}
             <input
               ref={inputRef}

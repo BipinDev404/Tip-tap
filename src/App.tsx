@@ -15,6 +15,7 @@ import { StreakModal } from './components/StreakModal';
 import { SEOHead } from './components/SEOHead';
 import { SEOModal } from './components/SEOModal';
 import { Sparkles } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/next';
 
 const AppContent: React.FC = () => {
   const { activeTab, setIsShortcutsOpen, settings, isTestActive } = useApp();
@@ -87,6 +88,7 @@ export default function App() {
   return (
     <AppProvider>
       <AppContent />
+      <Analytics />
     </AppProvider>
   );
 }
