@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- Main Root: Distraction-free typing speed test & practice -->
+  <url>
+    <loc>https://ais-pre-lfn3idh34kejylmz3k2abb-473078984102.asia-southeast1.run.app/</loc>
+    <lastmod>2026-10-09T00:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Practice View: Real-time WPM, Accuracy, Time & Word Drills -->
+  <url>
+    <loc>https://ais-pre-lfn3idh34kejylmz3k2abb-473078984102.asia-southeast1.run.app/?tab=practice</loc>
+    <lastmod>2026-10-09T00:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Learn / Academy: Complete 16-Lesson Touch Typing Course -->
+  <url>
+    <loc>https://ais-pre-lfn3idh34kejylmz3k2abb-473078984102.asia-southeast1.run.app/?tab=learn</loc>
+    <lastmod>2026-10-09T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Progress & Analytics: WPM Trend, Raw vs Net, Weak Key Heatmap -->
+  <url>
+    <loc>https://ais-pre-lfn3idh34kejylmz3k2abb-473078984102.asia-southeast1.run.app/?tab=progress</loc>
+    <lastmod>2026-10-09T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Settings & Customization: Themes, Mechanical Sound Profiles & Fonts -->
+  <url>
+    <loc>https://ais-pre-lfn3idh34kejylmz3k2abb-473078984102.asia-southeast1.run.app/?tab=settings</loc>
+    <lastmod>2026-10-09T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+</urlset>

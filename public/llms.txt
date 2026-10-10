@@ -1,0 +1,37 @@
+# Tip tap — Premium Typing Experience
+
+> Tip tap is a minimalist, distraction-free touch typing practice and speed test web application combining Apple-inspired industrial design with rapid keyboard fluency drills, an interactive 16-lesson Touch Typing Academy, and offline-first local storage.
+
+## Core Capabilities
+
+- **Real-Time WPM & Accuracy Engine**: Computes Net Words Per Minute (WPM), Raw WPM, Accuracy (%), and Character Consistency in real time.
+  - Formula: `WPM = ((Total Correct Keystrokes / 5) - Uncorrected Errors) / (Time in Minutes)`.
+  - Standard normalized word length: 5 keystrokes per word.
+- **Touch Typing Academy (16 Structured Lessons)**: Step-by-step muscle memory curriculum covering:
+  - Phase 1: Home Row Foundations (`ASDF JKL;`, `E & I`, `R & U`, `T & Y`)
+  - Phase 2: Complete Keyboard Range (`C, V, M, N`, `Q, W, O, P`, `B, X, Z, Keys`)
+  - Phase 3: Punctuation & Shift Capitalization (Periods, Commas, Question Marks, Quotes)
+  - Phase 4: Top Row Numbers & Standard Symbols (`!@#$%^&*()`)
+  - Phase 5: High-Speed Burst & Flow Drills (Common 200 English words, programming code syntax)
+- **Interactive Visual Keyboard**: Real-time virtual keyboard with ergonomic color-coded finger mapping and live key depressions.
+- **Audio Feedback Soundboard**: Realistic synthesized mechanical keyboard acoustic profiles including:
+  - Creamy Linear Switches
+  - Crisp Clicky Switches (Blue/Green stem profile)
+  - Vintage Typewriter
+  - Pop Bubble
+  - Muted Tactile
+- **Analytics & Muscle Memory Diagnostic**: Tracks historical WPM trajectories, daily practice streaks, and an interactive weak keys error frequency heatmap.
+- **Privacy First & Zero Latency**: All user progress, test archives, and preferences are saved exclusively in client-side localStorage. No trackers, ads, or external data harvesting.
+
+## Primary Routes & Navigation
+
+- [Practice Mode](/?tab=practice): Timed tests (15s, 30s, 60s, 120s), word count challenges (10, 25, 50, 100 words), custom text loader, and code drill mode.
+- [Touch Typing Academy](/?tab=learn): 16 interactive lessons with 3-star competency grading and finger position guides.
+- [Progress Dashboard](/?tab=progress): Comprehensive WPM charts, XP leveling tier, personal records, and mistake distribution.
+- [Sound & Display Settings](/?tab=settings): Accent color customizer, mechanical switch acoustic picker, typography selection (JetBrains Mono, Inter, DM Sans, Fira Code, Newsreader).
+
+## Technical Architecture
+
+- **Client Runtime**: React 19 SPA powered by Vite, Tailwind CSS v4, Lucide Icons, and Web Audio API synthesizer.
+- **Structured Data**: Schema.org `WebApplication`, `Course`, and `FAQPage` JSON-LD compliant.
+- **Full Documentation**: For complete lesson syllabi and algorithmic specs, read [/llms-full.txt](/llms-full.txt).

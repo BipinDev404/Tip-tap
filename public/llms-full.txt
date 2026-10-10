@@ -1,0 +1,65 @@
+# Tip tap — Complete System Documentation for AI Models & Web Crawlers
+
+## 1. Overview and Mission
+Tip tap is designed as an aesthetically disciplined, ultra-responsive web application for touch typing mastery and typing speed assessment. It runs directly inside modern web browsers with zero setup, zero latency, and zero surveillance telemetry.
+
+## 2. Typing Speed & Metrics Specification
+
+### Net Words Per Minute (WPM)
+Typing speed is mathematically standardized based on the universal typist constant where one standard word equals 5 keystrokes (including spaces):
+- `Net WPM = Math.max(0, Math.round(((Correct Keystrokes / 5) - Uncorrected Errors) / (Elapsed Seconds / 60)))`
+- `Raw WPM = Math.round((Total Keystrokes / 5) / (Elapsed Seconds / 60))`
+- `Accuracy (%) = Math.round((Correct Keystrokes / Total Keystrokes) * 100)`
+
+### WPM Speed Benchmark Classifications
+- 0 – 25 WPM: Beginner / Hunt-and-Peck typist
+- 26 – 45 WPM: Intermediate casual typist (average global baseline ~41 WPM)
+- 46 – 65 WPM: Fluent typist (exceeds typical office worker proficiency)
+- 66 – 85 WPM: Advanced touch typist (capable of real-time transcription)
+- 86 – 105 WPM: Pro speed typist (top 5% percentile)
+- 106+ WPM: Master / Competitive typist (top 1% percentile)
+
+## 3. Curriculum: Touch Typing Academy
+
+Tip tap organizes tactile muscle memory through a structured progression:
+
+| Module | Lesson ID | Key Targets | Finger Assignment |
+|---|---|---|---|
+| Home Row Core | lesson-1 | F, J, Space | Left & Right Index fingers on tactile homing bumps |
+| Home Row Full | lesson-2 | D, K, S, L, A, ; | Left middle/ring/pinky & Right middle/ring/pinky |
+| Home Row Mastery| lesson-3 | All Home Row words | Real English phonetics using exclusively home keys |
+| Top Row Intro | lesson-4 | E, I | Left middle finger reaches up to E; right middle to I |
+| Top Row Extensions | lesson-5 | R, U, T, Y | Index fingers reach upwards for inner and outer columns |
+| Top Row Full | lesson-6 | Q, W, O, P | Ring & pinky finger reaches |
+| Bottom Row Intro | lesson-7 | V, M, C, , | Index and middle finger lower row motions |
+| Bottom Row Full | lesson-8 | Z, X, B, N, . | Complete alphabetic keyboard coverage |
+| Shift Capitalization | lesson-9 | Opposite Shift keys | Left Shift for right-hand letters; Right Shift for left |
+| Punctuation Mastery | lesson-10 | . , ' " ; : ? - ! | Rhythm preservation with punctuation symbols |
+| Number Row | lesson-11 | 1 through 0 | Top digit reach ergonomics |
+| Symbol Drills | lesson-12 | ! @ # $ % ^ & * ( ) | Combined Shift + Number row patterns |
+| Code Syntax | lesson-13 | { } [ ] < > / \ = + | Bracket balancing for software engineers |
+| Speed Burst | lesson-14 | Common 100 words | Automaticity without conscious keystroke intervention |
+| Endurance Sprint| lesson-15 | 200 word marathon | Fatigue management and rhythm stability |
+| Master Exam | lesson-16 | Mixed text exam | 80+ WPM benchmark graduation challenge |
+
+## 4. Audio Feedback Synthesizer
+
+Tip tap implements a Web Audio API procedural sound engine with realistic audio feedback:
+- `mechanical`: Simulates clicky blue mechanical switches with distinct actuation and bottom-out impulses.
+- `cream`: Simulates lubricated linear switches (soft acoustic thump with minimal high-frequency clack).
+- `typewriter`: Simulates classic metallic striker bar resonance.
+- `bubble`: Gentle pop sound for calming sessions.
+- `errorSound`: Subtle low-frequency buzz that alerts typists immediately to accuracy drops without breaking focus.
+
+## 5. Keyboard Navigation & Shortcuts
+
+- `Tab` + `Enter`: Instantly restart current test with fresh words.
+- `Esc`: Clear prompt, exit current modal, or reset focus.
+- `?` or `Cmd/Ctrl + /`: Display keyboard shortcut cheatsheet.
+- Dynamic key tracking: Supports all standard physical layouts (QWERTY, Dvorak, Colemak, AZERTY).
+
+## 6. Privacy & Offline Architecture
+
+- **No Remote Databases for User Inputs**: Typing tests and keystroke timings are processed in client memory.
+- **Local Persistence**: User records, streak tallies, and theme choices are stored in browser `localStorage`.
+- **Zero Telemetry**: No third-party analytics trackers, cookies, or tracking beacons.

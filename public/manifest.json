@@ -1,0 +1,40 @@
+{
+  "name": "Tip tap — Premium Typing Experience",
+  "short_name": "Tip tap",
+  "description": "A refined, distraction-free typing practice web application combining Apple-inspired minimalism with rapid keyboard fluency drills and beginner academy.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "orientation": "any",
+  "categories": [
+    "education",
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Typing Practice",
+      "url": "/?tab=practice",
+      "description": "Start a rapid WPM typing speed test"
+    },
+    {
+      "name": "Touch Typing Academy",
+      "url": "/?tab=learn",
+      "description": "Practice finger positioning lessons"
+    },
+    {
+      "name": "Progress Analytics",
+      "url": "/?tab=progress",
+      "description": "Check your WPM trends and weak keys"
+    }
+  ]
+}

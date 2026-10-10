@@ -1,0 +1,97 @@
+# ==============================================================================
+# Tip tap — Robots.txt Configuration
+# Full SEO, Search Engine Crawlers & AI Model / LLM Discovery Directives
+# ==============================================================================
+
+# Default Crawlers (Google, Bing, DuckDuckGo, Yahoo, Apple, Baidu, Yandex)
+User-agent: *
+Allow: /
+Crawl-delay: 1
+
+# Major Search Engine Crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+# ==============================================================================
+# Generative AI, LLM Search & Model Training Crawlers (AI SEO / GEO)
+# Permitted to ground, index, cite and reference Tip tap features & documentation
+# ==============================================================================
+
+# OpenAI ChatGPT & SearchGPT
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Anthropic Claude & Search
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+# Perplexity AI Search & Answer Engine
+User-agent: PerplexityBot
+Allow: /
+
+# Google Gemini, AI Overviews & Extended Grounding
+User-agent: Google-Extended
+Allow: /
+
+# Apple Intelligence
+User-agent: Applebot-Extended
+Allow: /
+
+# Amazon & Meta AI Crawlers
+User-agent: Amazonbot
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+# Cohere, ByteDance & Semantic Research Bots
+User-agent: cohere-ai
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Diffbot
+Allow: /
+
+# ==============================================================================
+# Disallowed paths (temporary/internal build artifacts)
+# ==============================================================================
+Disallow: /api/private/
+Disallow: /dist/
+
+# ==============================================================================
+# Sitemap & LLM Documentation Standards
+# ==============================================================================
+Sitemap: /sitemap.xml
+LLMs-Txt: /llms.txt
