@@ -23,7 +23,8 @@ import {
   Sparkles,
   SlidersHorizontal,
   ChevronDown,
-  EyeOff
+  EyeOff,
+  MousePointerClick
 } from 'lucide-react';
 
 export const PracticeView: React.FC = () => {
@@ -1031,12 +1032,26 @@ export const PracticeView: React.FC = () => {
           {/* Centered Distraction-Free Linear Typing Stage */}
           <div
             onClick={focusInput}
-            className={`relative w-full max-w-4xl rounded-2xl sm:rounded-3xl mt-3 sm:mt-6 mb-6 sm:mb-10 py-6 sm:py-10 px-4 sm:px-8 md:px-12 cursor-pointer select-none bg-zinc-950/90 border transition-all duration-300 shadow-2xl backdrop-blur-md group overflow-hidden ${
+            className={`relative w-full max-w-4xl rounded-2xl sm:rounded-3xl mt-3 sm:mt-6 mb-6 sm:mb-10 py-6 sm:py-10 px-3 sm:px-6 md:px-8 cursor-pointer select-none bg-zinc-950/90 border transition-all duration-300 shadow-2xl backdrop-blur-md group overflow-hidden ${
               isInputFocused 
                 ? 'border-zinc-800 ring-1 ring-zinc-800/60' 
                 : 'border-zinc-800/80 hover:border-zinc-700'
             }`}
           >
+            {/* Blurry state overlay if cursor is not inside the practice box */}
+            {!isInputFocused && (
+              <div 
+                onClick={focusInput}
+                className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-zinc-950/50 backdrop-blur-[3px] rounded-2xl sm:rounded-3xl cursor-pointer animate-in fade-in duration-200 p-4 text-center touch-manipulation"
+              >
+                <div className="flex items-center gap-2 sm:gap-2.5 px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl bg-zinc-900 border border-zinc-700/80 text-zinc-100 shadow-2xl hover:border-accent hover:bg-zinc-850 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group">
+                  <MousePointerClick className="w-4 h-4 text-accent group-hover:scale-110 transition-transform" />
+                  <span className="text-xs sm:text-sm font-semibold tracking-wide">Tap or click here to start typing</span>
+                </div>
+                <span className="text-[10px] sm:text-[11px] text-zinc-400 mt-2 font-mono">or tap anywhere to open keyboard</span>
+              </div>
+            )}
+
             {/* Transparent Input covering the typing stage on mobile/desktop */}
             <input
               ref={inputRef}
@@ -1060,7 +1075,7 @@ export const PracticeView: React.FC = () => {
             {/* Focused Linear Typing View (Sliding Window: Current & Next Line) */}
             <div
               ref={textContainerRef}
-              className={`relative overflow-hidden select-none font-normal text-center transition-all duration-300 px-3 sm:px-6 ${
+              className={`relative overflow-hidden select-none font-normal text-center transition-all duration-300 w-full px-2 sm:px-4 ${
                 !isInputFocused ? 'filter blur-[5px] opacity-25 pointer-events-none select-none' : 'filter-none opacity-100'
               } ${fontSizeClass}`}
               style={{
@@ -1068,13 +1083,13 @@ export const PracticeView: React.FC = () => {
                 height: `${lineHeightPx * 2}px`
               }}
             >
-              {/* Invisible Layout Probe to measure exact natural word line wrapping with safety margins */}
+              {/* Layout Probe with safety margins to guarantee lines never touch or cut left/right */}
               <div
                 ref={probeContainerRef}
                 aria-hidden="true"
-                className="absolute left-0 top-0 w-full invisible pointer-events-none -z-50 select-none text-center px-3 sm:px-6"
+                className="absolute inset-x-0 top-0 invisible pointer-events-none -z-50 select-none text-center"
               >
-                <div className="w-full max-w-[800px] mx-auto text-center">
+                <div className="w-[calc(100%-36px)] sm:w-[calc(100%-56px)] mx-auto text-center">
                   {wordsList.map(wordObj => (
                     <span
                       key={`probe-${wordObj.wordIndex}`}
@@ -1108,7 +1123,7 @@ export const PracticeView: React.FC = () => {
                 return (
                   <div
                     key={`line-${lineIdx}`}
-                    className={`absolute left-0 top-0 w-full px-4 sm:px-6 flex items-center justify-center flex-nowrap whitespace-nowrap text-center ${transitionClass} will-change-transform`}
+                    className={`absolute inset-x-0 top-0 flex items-center justify-center flex-nowrap whitespace-nowrap text-center ${transitionClass} will-change-transform`}
                     style={{
                       transform: `translate3d(0, ${yOffset}px, 0)`,
                       opacity: lineOpacity,
@@ -1126,7 +1141,7 @@ export const PracticeView: React.FC = () => {
                           key={wordObj.wordIndex}
                           ref={isWordActive ? activeWordRef : null}
                           data-word-idx={wordObj.wordIndex}
-                          className="inline-block whitespace-nowrap mr-[0.28em]"
+                          className="inline-block whitespace-nowrap mr-[0.3em]"
                         >
                           {wordObj.letters.map(letter => {
                             const isTyped = letter.index < typedText.length;
@@ -1223,7 +1238,7 @@ export const PracticeView: React.FC = () => {
 
           {/* Interactive Virtual Keyboard */}
           {settings.showVirtualKeyboard && (
-            <div className="w-full max-w-4xl mt-6 animate-in fade-in duration-300">
+            <div className="w-full max-w-2xl mt-4 sm:mt-6 animate-in fade-in duration-300">
               <VirtualKeyboard
                 expectedKey={currentExpectedChar}
                 activeKeyPressed={lastKeyPressed}

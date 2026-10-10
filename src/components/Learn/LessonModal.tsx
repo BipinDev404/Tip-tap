@@ -243,7 +243,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
             autoFocus
           />
 
-          <div className="text-lg sm:text-2xl font-mono leading-relaxed text-center tracking-wide">
+          <div className="text-lg sm:text-2xl font-mono leading-relaxed text-center tracking-wide w-full max-w-full flex flex-wrap justify-center break-words px-2">
             {targetText.split('').map((char, idx) => {
               const isTyped = idx < typedText.length;
               const isCurrent = idx === typedText.length;
