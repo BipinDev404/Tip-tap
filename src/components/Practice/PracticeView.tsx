@@ -72,8 +72,7 @@ export const PracticeView: React.FC = () => {
 
   // Results state
   const [finishedResult, setFinishedResult] = useState<TestResult | null>(null);
-  const [lineWordIndices, setLineWordIndices] = useState<number[][]>([]);
-  const [lineHeightPx, setLineHeightPx] = useState<number>(58);
+  const [scrollOffset, setScrollOffset] = useState<number>(0);
 
   // Performance tracking
   const keystrokeTimestamps = useRef<number[]>([]);
@@ -82,7 +81,7 @@ export const PracticeView: React.FC = () => {
   const timerIntervalRef = useRef<number | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const textContainerRef = useRef<HTMLDivElement | null>(null);
-  const probeContainerRef = useRef<HTMLDivElement | null>(null);
+  const wordsWrapperRef = useRef<HTMLDivElement | null>(null);
   const activeCharRef = useRef<HTMLSpanElement | null>(null);
   const activeWordRef = useRef<HTMLSpanElement | null>(null);
 
@@ -145,6 +144,7 @@ export const PracticeView: React.FC = () => {
     setElapsedSeconds(0);
     setLastKeyPressed(null);
     setFinishedResult(null);
+    setScrollOffset(0);
     keystrokeTimestamps.current = [];
     missedKeysRef.current = {};
     historyRef.current = [];
@@ -205,95 +205,16 @@ export const PracticeView: React.FC = () => {
     };
   }, [focusInput, isCustomModalOpen, isTestFinished]);
 
-  // Measure word positions inside the static layout probe to compute line groupings
-  const measureProbeLines = useCallback(() => {
-    if (!probeContainerRef.current) return;
-    const probeEls = probeContainerRef.current.querySelectorAll<HTMLElement>('[data-probe-word]');
-    if (probeEls.length === 0) return;
-
-    const lines: number[][] = [];
-    let currentLine: number[] = [];
-    let lastTop: number | null = null;
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-    const baseLineHeightMap: Record<string, number> = isMobile ? {
-      sm: 36,
-      md: 44,
-      lg: 52,
-      xl: 62
-    } : {
-      sm: 44,
-      md: 52,
-      lg: 60,
-      xl: 72
-    };
-    const minLineHeight = baseLineHeightMap[settings.fontSize] || (isMobile ? 52 : 60);
-    let detectedLineHeight = minLineHeight;
-
-    probeEls.forEach((el, idx) => {
-      const top = el.offsetTop;
-      if (lastTop === null) {
-        lastTop = top;
-        currentLine.push(idx);
-      } else if (top > lastTop + 6) {
-        lines.push(currentLine);
-        if (lines.length === 1) {
-          detectedLineHeight = Math.max(minLineHeight, Math.round(top - lastTop));
-        }
-        lastTop = top;
-        currentLine = [idx];
-      } else {
-        currentLine.push(idx);
-      }
-    });
-
-    if (currentLine.length > 0) {
-      lines.push(currentLine);
+  // Dynamic line height based on font size setting and mobile viewport
+  const lineHeightPx = useMemo(() => {
+    switch (settings.fontSize) {
+      case 'sm': return 42;
+      case 'md': return 48;
+      case 'xl': return 68;
+      case 'lg':
+      default: return 56;
     }
-
-    if (lines.length === 1 && probeEls[0]) {
-      detectedLineHeight = Math.max(minLineHeight, Math.round(probeEls[0].offsetHeight * 1.35));
-    }
-
-    setLineWordIndices(lines);
-    setLineHeightPx(detectedLineHeight);
   }, [settings.fontSize]);
-
-  // Measure whenever target text, font size, font family, or session changes
-  useEffect(() => {
-    measureProbeLines();
-    const frameId = requestAnimationFrame(() => {
-      measureProbeLines();
-    });
-
-    if (document.fonts) {
-      document.fonts.ready.then(() => {
-        measureProbeLines();
-      });
-    }
-
-    return () => cancelAnimationFrame(frameId);
-  }, [targetText, settings.fontSize, settings.fontFamily, testSessionId, measureProbeLines]);
-
-  // Recalculate on container resize via ResizeObserver and window events
-  useEffect(() => {
-    if (!textContainerRef.current) return;
-    const observer = new ResizeObserver(() => {
-      measureProbeLines();
-    });
-    observer.observe(textContainerRef.current);
-
-    const handleOrientation = () => {
-      setTimeout(measureProbeLines, 100);
-    };
-    window.addEventListener('resize', measureProbeLines);
-    window.addEventListener('orientationchange', handleOrientation);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', measureProbeLines);
-      window.removeEventListener('orientationchange', handleOrientation);
-    };
-  }, [measureProbeLines]);
 
   // Finish Test Calculation
   const finishTest = useCallback(() => {
@@ -650,61 +571,39 @@ export const PracticeView: React.FC = () => {
     return Math.max(0, wordsList.length - 1);
   }, [typedText.length, wordsList]);
 
-  // Active line index calculated from word-to-line grouping
-  const activeLineIndex = useMemo(() => {
-    if (lineWordIndices.length === 0) return 0;
-    for (let lineIdx = 0; lineIdx < lineWordIndices.length; lineIdx++) {
-      if (lineWordIndices[lineIdx].includes(currentWordIndex)) {
-        return lineIdx;
+  // Smoothly scroll lines up as user progresses to new lines
+  useEffect(() => {
+    if (!activeWordRef.current || !wordsWrapperRef.current) return;
+    const wordEl = activeWordRef.current;
+    const wrapperEl = wordsWrapperRef.current;
+    
+    const wordTop = wordEl.offsetTop - wrapperEl.offsetTop;
+    const activeHeight = wordEl.offsetHeight || lineHeightPx;
+    
+    // If user is past line 1, scroll up so active line stays in view with context above & preview below
+    if (wordTop > activeHeight * 0.8) {
+      setScrollOffset(Math.max(0, wordTop - activeHeight));
+    } else {
+      setScrollOffset(0);
+    }
+  }, [currentWordIndex, typedText.length, lineHeightPx]);
+
+  // Handle window resize to keep scroll offset accurately aligned
+  useEffect(() => {
+    const handleResize = () => {
+      if (activeWordRef.current && wordsWrapperRef.current) {
+        const wordTop = activeWordRef.current.offsetTop - wordsWrapperRef.current.offsetTop;
+        const activeHeight = activeWordRef.current.offsetHeight || lineHeightPx;
+        if (wordTop > activeHeight * 0.8) {
+          setScrollOffset(Math.max(0, wordTop - activeHeight));
+        } else {
+          setScrollOffset(0);
+        }
       }
-    }
-    return Math.max(0, lineWordIndices.length - 1);
-  }, [lineWordIndices, currentWordIndex]);
-
-  // Sliding window: only render the active line and the next line,
-  // plus the completing line during exit transition
-  const slidingWindowLines = useMemo(() => {
-    if (lineWordIndices.length === 0) {
-      // Fallback: single line with all words while probe is measuring
-      return [{ lineIdx: 0, wordIndices: wordsList.map(w => w.wordIndex) }];
-    }
-
-    const linesToRender: Array<{ lineIdx: number; wordIndices: number[] }> = [];
-
-    // Completed line (animates shifting upwards and fading out)
-    if (activeLineIndex > 0) {
-      linesToRender.push({
-        lineIdx: activeLineIndex - 1,
-        wordIndices: lineWordIndices[activeLineIndex - 1]
-      });
-    }
-
-    // Current line (active, highlighted characters, typing cursor)
-    if (activeLineIndex < lineWordIndices.length) {
-      linesToRender.push({
-        lineIdx: activeLineIndex,
-        wordIndices: lineWordIndices[activeLineIndex]
-      });
-    }
-
-    // Next line (preview line, upcoming characters)
-    if (activeLineIndex + 1 < lineWordIndices.length) {
-      linesToRender.push({
-        lineIdx: activeLineIndex + 1,
-        wordIndices: lineWordIndices[activeLineIndex + 1]
-      });
-    }
-
-    // Next + 1 line (enters from below into preview slot)
-    if (activeLineIndex + 2 < lineWordIndices.length) {
-      linesToRender.push({
-        lineIdx: activeLineIndex + 2,
-        wordIndices: lineWordIndices[activeLineIndex + 2]
-      });
-    }
-
-    return linesToRender;
-  }, [lineWordIndices, activeLineIndex, wordsList]);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [lineHeightPx]);
 
   // Previous best WPM for ghost pacing layer
   const previousBestWpm = useMemo(() => {
@@ -1072,137 +971,100 @@ export const PracticeView: React.FC = () => {
               tabIndex={0}
             />
 
-            {/* Focused Linear Typing View (Sliding Window: Current & Next Line) */}
+            {/* Distraction-Free Natural Typing View (Monkeytype-grade wrap & smooth line scroll) */}
             <div
               ref={textContainerRef}
-              className={`relative overflow-hidden select-none font-normal text-center transition-all duration-300 w-full px-2 sm:px-4 ${
+              className={`relative overflow-hidden select-none font-normal transition-all duration-300 w-full px-4 sm:px-8 ${
                 !isInputFocused ? 'filter blur-[5px] opacity-25 pointer-events-none select-none' : 'filter-none opacity-100'
               } ${fontSizeClass}`}
               style={{
                 fontFamily: 'var(--font-custom)',
-                height: `${lineHeightPx * 2}px`
+                height: `${lineHeightPx * 3}px`,
+                maskImage: scrollOffset > 8
+                  ? 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,1) 18%, rgba(0,0,0,1) 82%, transparent 100%)'
+                  : 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 82%, transparent 100%)',
+                WebkitMaskImage: scrollOffset > 8
+                  ? 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,1) 18%, rgba(0,0,0,1) 82%, transparent 100%)'
+                  : 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 82%, transparent 100%)'
               }}
             >
-              {/* Layout Probe with safety margins to guarantee lines never touch or cut left/right */}
               <div
-                ref={probeContainerRef}
-                aria-hidden="true"
-                className="absolute inset-x-0 top-0 invisible pointer-events-none -z-50 select-none text-center"
+                ref={wordsWrapperRef}
+                className="w-full flex flex-wrap items-center justify-start content-start transition-transform duration-200 ease-out will-change-transform py-1"
+                style={{
+                  transform: `translate3d(0, -${scrollOffset}px, 0)`
+                }}
               >
-                <div className="w-[calc(100%-36px)] sm:w-[calc(100%-56px)] mx-auto text-center">
-                  {wordsList.map(wordObj => (
+                {wordsList.map((wordObj) => {
+                  const isCurrentWord = wordObj.wordIndex === currentWordIndex;
+
+                  return (
                     <span
-                      key={`probe-${wordObj.wordIndex}`}
-                      data-probe-word={wordObj.wordIndex}
-                      className="inline-block whitespace-nowrap mr-[0.3em]"
+                      key={wordObj.wordIndex}
+                      ref={isCurrentWord ? activeWordRef : null}
+                      data-word-idx={wordObj.wordIndex}
+                      className={`inline-flex items-center whitespace-nowrap mr-[0.38em] my-[0.1em] transition-opacity duration-150 ${
+                        isCurrentWord ? 'opacity-100' : 'opacity-50'
+                      }`}
                     >
-                      {wordObj.letters.map(l => l.char).join('')}
-                      {wordObj.hasSpace ? ' ' : ''}
+                      {wordObj.letters.map((letter) => {
+                        const isTyped = letter.index < typedText.length;
+                        const isCurrent = letter.index === typedText.length;
+                        const isCorrect = isTyped && typedText[letter.index] === letter.char;
+                        const isIncorrect = isTyped && !isCorrect;
+
+                        return (
+                          <span
+                            key={letter.index}
+                            ref={isCurrent ? activeCharRef : null}
+                            className={`relative inline-block transition-colors duration-75 ${
+                              isCorrect
+                                ? 'text-zinc-100 font-medium'
+                                : isIncorrect
+                                  ? settings.highlightErrors
+                                    ? 'text-rose-400 bg-rose-500/15 rounded-xs font-medium'
+                                    : 'text-rose-400 font-medium'
+                                  : isCurrent && settings.caretStyle === 'block'
+                                    ? 'text-zinc-950 font-bold relative z-10'
+                                    : 'text-zinc-500'
+                            }`}
+                          >
+                            {/* Render active caret before current untyped character */}
+                            {isCurrent && (
+                              <span className={`absolute ${caretClasses}`} />
+                            )}
+
+                            {letter.char}
+                          </span>
+                        );
+                      })}
+
+                      {/* Trailing space after word */}
+                      {wordObj.hasSpace && (() => {
+                        const isSpaceCurrent = wordObj.spaceIndex === typedText.length;
+                        return (
+                          <span
+                            ref={isSpaceCurrent ? activeCharRef : null}
+                            className="relative inline-block w-[0.25em]"
+                          >
+                            {isSpaceCurrent && (
+                              <span className={`absolute ${settings.caretStyle === 'block' ? 'inset-0 w-[0.55em] -left-[1px] bg-accent/85 rounded-xs animate-caret-pulse z-0 pointer-events-none shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]' : caretClasses}`} />
+                            )}
+                            &nbsp;
+                          </span>
+                        );
+                      })()}
                     </span>
-                  ))}
-                </div>
+                  );
+                })}
+
+                {/* Trailing caret if end reached on current test */}
+                {typedText.length >= targetText.length && (
+                  <span className="relative inline-block w-[2px] h-[1em]">
+                    <span className={`absolute ${caretClasses}`} />
+                  </span>
+                )}
               </div>
-
-              {/* Render only lines in the sliding window */}
-              {slidingWindowLines.map(({ lineIdx, wordIndices }) => {
-                const lineDelta = lineIdx - activeLineIndex;
-                // lineDelta === -1: completed line, shifted upwards and fading out
-                // lineDelta === 0: current active line in top slot, opacity 1
-                // lineDelta === 1: next line preview in bottom slot, opacity 0.42
-                // lineDelta >= 2: upcoming line entering from below, opacity 0
-
-                const yOffset = lineDelta * lineHeightPx;
-                const isCurrentLine = lineDelta === 0;
-                const isNextLine = lineDelta === 1;
-
-                const lineOpacity = isCurrentLine ? 1 : isNextLine ? 0.42 : 0;
-                const transitionClass = settings.reducedMotion
-                  ? 'transition-none'
-                  : 'transition-all duration-300 ease-out';
-
-                return (
-                  <div
-                    key={`line-${lineIdx}`}
-                    className={`absolute inset-x-0 top-0 flex items-center justify-center flex-nowrap whitespace-nowrap text-center ${transitionClass} will-change-transform`}
-                    style={{
-                      transform: `translate3d(0, ${yOffset}px, 0)`,
-                      opacity: lineOpacity,
-                      height: `${lineHeightPx}px`,
-                      pointerEvents: isCurrentLine ? 'auto' : 'none'
-                    }}
-                  >
-                    {wordIndices.map(wIdx => {
-                      const wordObj = wordsList[wIdx];
-                      if (!wordObj) return null;
-                      const isWordActive = wordObj.wordIndex === currentWordIndex;
-
-                      return (
-                        <span
-                          key={wordObj.wordIndex}
-                          ref={isWordActive ? activeWordRef : null}
-                          data-word-idx={wordObj.wordIndex}
-                          className="inline-block whitespace-nowrap mr-[0.3em]"
-                        >
-                          {wordObj.letters.map(letter => {
-                            const isTyped = letter.index < typedText.length;
-                            const isCurrent = letter.index === typedText.length;
-                            const isCorrect = isTyped && typedText[letter.index] === letter.char;
-                            const isIncorrect = isTyped && !isCorrect;
-
-                            return (
-                              <span
-                                key={letter.index}
-                                ref={isCurrent ? activeCharRef : null}
-                                className={`relative inline-block transition-colors duration-75 ${
-                                  isCorrect
-                                    ? 'text-zinc-100 font-medium'
-                                    : isIncorrect
-                                      ? settings.highlightErrors
-                                        ? 'text-rose-400 bg-rose-500/15 rounded-xs font-medium'
-                                        : 'text-rose-400 font-medium'
-                                      : isCurrent && settings.caretStyle === 'block'
-                                        ? 'text-zinc-950 font-bold relative z-10'
-                                        : 'text-zinc-500'
-                                }`}
-                              >
-                                {/* Render active caret before current untyped character */}
-                                {isCurrent && (
-                                  <span className={`absolute ${caretClasses}`} />
-                                )}
-
-                                {letter.char}
-                              </span>
-                            );
-                          })}
-
-                          {/* Trailing space after word */}
-                          {wordObj.hasSpace && (() => {
-                            const isSpaceCurrent = wordObj.spaceIndex === typedText.length;
-                            return (
-                              <span
-                                ref={isSpaceCurrent ? activeCharRef : null}
-                                className="relative inline-block w-[0.25em]"
-                              >
-                                {isSpaceCurrent && (
-                                  <span className={`absolute ${settings.caretStyle === 'block' ? 'inset-0 w-[0.55em] -left-[1px] bg-accent/85 rounded-xs animate-caret-pulse z-0 pointer-events-none shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]' : caretClasses}`} />
-                                )}
-                                &nbsp;
-                              </span>
-                            );
-                          })()}
-                        </span>
-                      );
-                    })}
-
-                    {/* Trailing caret if end reached on current line */}
-                    {isCurrentLine && typedText.length >= targetText.length && (
-                      <span className="relative inline-block w-[2px] h-[1em]">
-                        <span className={`absolute ${caretClasses}`} />
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
             </div>
 
             {/* Author Attribution for Quote Mode */}
