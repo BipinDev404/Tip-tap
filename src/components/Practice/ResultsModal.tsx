@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { TestResult, KeystrokeSample } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { 
@@ -18,7 +18,9 @@ import {
   Copy,
   Flame,
   X,
-  Image as ImageIcon
+  ImageIcon,
+  AlertTriangle,
+  CheckCircle2
 } from 'lucide-react';
 
 interface ResultsModalProps {
@@ -68,25 +70,81 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
     return Math.round(sum / history.length);
   }, [history, result.wpm]);
 
-  // Speed Grade Tier
-  const speedTier = useMemo(() => {
+  // DYNAMIC PERFORMANCE COLOR SYSTEM
+  // Bad = Red (<35 WPM), Normal = Yellow (35-65 WPM), Very Good = Blue (>65 WPM)
+  const wpmStyle = useMemo(() => {
     const wpm = result.wpm;
-    if (wpm >= 120) return { title: 'GODSPEED', color: 'text-purple-400 border-purple-500/30 bg-purple-500/10', icon: Zap };
-    if (wpm >= 90) return { title: 'GRANDMASTER', color: 'text-amber-400 border-amber-500/30 bg-amber-500/10', icon: Trophy };
-    if (wpm >= 70) return { title: 'FLUENT', color: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10', icon: Flame };
-    if (wpm >= 50) return { title: 'SWIFT', color: 'text-blue-400 border-blue-500/30 bg-blue-500/10', icon: TrendingUp };
-    if (wpm >= 30) return { title: 'STEADY', color: 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10', icon: Activity };
-    return { title: 'BUILDING SPEED', color: 'text-zinc-400 border-zinc-700 bg-zinc-800/50', icon: Target };
+    if (wpm < 35) {
+      return {
+        textColor: 'text-rose-400',
+        badgeBg: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
+        glow: 'drop-shadow-[0_0_35px_rgba(244,63,94,0.35)]',
+        badgeText: 'Needs Practice · Building Speed',
+        canvasHex: '#f43f5e',
+        icon: AlertTriangle
+      };
+    } else if (wpm <= 65) {
+      return {
+        textColor: 'text-amber-400',
+        badgeBg: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+        glow: 'drop-shadow-[0_0_35px_rgba(245,158,11,0.35)]',
+        badgeText: 'Normal Speed · Solid Performance',
+        canvasHex: '#fbbf24',
+        icon: Flame
+      };
+    } else {
+      return {
+        textColor: 'text-blue-400',
+        badgeBg: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+        glow: 'drop-shadow-[0_0_35px_rgba(96,165,250,0.35)]',
+        badgeText: 'Very Good · High Speed',
+        canvasHex: '#60a5fa',
+        icon: Zap
+      };
+    }
   }, [result.wpm]);
+
+  // ACCURACY COLOR SYSTEM
+  // Bad = Red (<92%), Normal = Yellow (92-97%), Very Good = Blue (>97%)
+  const accuracyStyle = useMemo(() => {
+    const acc = result.accuracy;
+    if (acc < 92) {
+      return {
+        textColor: 'text-rose-400',
+        label: 'Low Precision'
+      };
+    } else if (acc <= 97) {
+      return {
+        textColor: 'text-amber-400',
+        label: 'Normal Accuracy'
+      };
+    } else {
+      return {
+        textColor: 'text-blue-400',
+        label: 'High Accuracy'
+      };
+    }
+  }, [result.accuracy]);
+
+  // Clean Test Mode Title
+  const modeTitle = useMemo(() => {
+    switch (result.mode) {
+      case 'words': return `WORD PRACTICE TEST (${result.modeValue})`;
+      case 'quote': return `QUOTE TYPING TEST`;
+      case 'custom': return `CUSTOM TEXT TEST`;
+      case 'time':
+      default: return `TIMED SPEED TEST (${result.modeValue})`;
+    }
+  }, [result.mode, result.modeValue]);
 
   // WPM diff vs Personal Best
   const pbDiff = result.wpm - personalBestWpm;
 
   // Chart Dimensions & Coordinate Math
   const chartWidth = 720;
-  const chartHeight = 200;
+  const chartHeight = 180;
   const paddingX = 40;
-  const paddingY = 30;
+  const paddingY = 25;
 
   const pointsWpm = useMemo(() => {
     if (history.length <= 1) return [];
@@ -141,16 +199,15 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return '';
 
-    // Accent color from computed CSS variable
-    const computedAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#60a5fa';
+    const heroHex = wpmStyle.canvasHex;
 
     // Outer Background
     ctx.fillStyle = '#09090b';
     ctx.fillRect(0, 0, 1200, 630);
 
-    // Subtle radial glow in center
+    // Radial glow in center using performance color
     const radial = ctx.createRadialGradient(600, 260, 20, 600, 260, 520);
-    radial.addColorStop(0, 'rgba(96, 165, 250, 0.16)');
+    radial.addColorStop(0, `${heroHex}22`);
     radial.addColorStop(1, 'rgba(9, 9, 11, 0)');
     ctx.fillStyle = radial;
     ctx.fillRect(0, 0, 1200, 630);
@@ -170,40 +227,44 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
 
     ctx.fillStyle = '#71717a';
     ctx.font = '500 18px -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif';
-    ctx.fillText('· Distraction-free typing excellence', 180, 80);
+    ctx.fillText('· Typing Result', 180, 80);
 
     // Mode Pill Badge Top Right
     ctx.fillStyle = '#18181b';
     ctx.beginPath();
-    ctx.roundRect(930, 52, 206, 42, 21);
+    ctx.roundRect(880, 52, 256, 42, 21);
     ctx.fill();
     ctx.strokeStyle = '#3f3f46';
     ctx.lineWidth = 1;
     ctx.stroke();
 
     ctx.fillStyle = '#a1a1aa';
-    ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(`${result.mode.toUpperCase()} (${result.modeValue})`, 1033, 78);
+    ctx.fillText(modeTitle, 1008, 78);
 
-    // Centered Hero WPM Number
-    ctx.fillStyle = computedAccent;
-    ctx.font = '900 136px -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif';
+    // Centered Hero WPM Number (Color Coded)
+    ctx.fillStyle = heroHex;
+    ctx.font = '900 140px -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(`${result.wpm}`, 600, 250);
 
     ctx.fillStyle = '#a1a1aa';
     ctx.font = 'bold 22px -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif';
-    ctx.fillText('NET WORDS PER MINUTE', 600, 295);
+    ctx.fillText('WPM', 600, 295);
 
-    // Tier badge string
-    ctx.fillStyle = '#3f3f46';
+    // Status Badge Pill
+    ctx.fillStyle = '#18181b';
     ctx.beginPath();
-    ctx.roundRect(500, 312, 200, 32, 16);
+    ctx.roundRect(460, 312, 280, 34, 17);
     ctx.fill();
-    ctx.fillStyle = computedAccent;
+    ctx.strokeStyle = heroHex;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.fillStyle = heroHex;
     ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, sans-serif';
-    ctx.fillText(`TIER: ${speedTier.title}`, 600, 333);
+    ctx.fillText(wpmStyle.badgeText.toUpperCase(), 600, 334);
 
     // Secondary Stats Grid (4 Cards)
     const stats = [
@@ -221,7 +282,6 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
     stats.forEach((stat, idx) => {
       const x = startX + idx * (boxW + gap);
 
-      // Stat card background
       ctx.fillStyle = '#121215';
       ctx.beginPath();
       ctx.roundRect(x, boxY, boxW, 100, 16);
@@ -229,13 +289,11 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
       ctx.strokeStyle = '#27272a';
       ctx.stroke();
 
-      // Label
       ctx.fillStyle = '#71717a';
       ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(stat.label, x + boxW / 2, boxY + 34);
 
-      // Value
       ctx.fillStyle = '#f4f4f5';
       ctx.font = 'bold 30px -apple-system, BlinkMacSystemFont, sans-serif';
       ctx.fillText(stat.val, x + boxW / 2, boxY + 76);
@@ -249,7 +307,7 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
       const chartH = 45;
 
       ctx.beginPath();
-      ctx.strokeStyle = computedAccent;
+      ctx.strokeStyle = heroHex;
       ctx.lineWidth = 3;
 
       history.forEach((pt, i) => {
@@ -261,7 +319,7 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
       ctx.stroke();
     }
 
-    // Footer Watermark
+    // Footer
     ctx.fillStyle = '#52525b';
     ctx.font = '13px -apple-system, BlinkMacSystemFont, sans-serif';
     ctx.textAlign = 'center';
@@ -282,7 +340,7 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
     if (!generatedImageUrl) return;
     const a = document.createElement('a');
     a.href = generatedImageUrl;
-    a.download = `tiptap-typing-test-${result.wpm}wpm.png`;
+    a.download = `tiptap-typing-result-${result.wpm}wpm.png`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -300,14 +358,13 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
       setCopiedImage(true);
       setTimeout(() => setCopiedImage(false), 2200);
     } catch {
-      // Fallback: Copy text if image copy blocked by browser
       handleCopyText();
     }
   };
 
   // Copy text summary
   const handleCopyText = () => {
-    const text = `Tip tap typing test: ${result.wpm} WPM · ${result.accuracy}% accuracy · ${result.consistency}% consistency (${result.modeValue} ${result.mode})`;
+    const text = `Tip tap typing test: ${result.wpm} WPM · ${result.accuracy}% accuracy (${result.modeValue} ${result.mode})`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text);
       setCopiedText(true);
@@ -342,25 +399,32 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onNewTest, onRetry, onPracticeWeakKeys, hasWeakKeys]);
 
-  const TierIcon = speedTier.icon;
+  const StatusIcon = wpmStyle.icon;
 
   return (
     <div className="w-full max-w-4xl mx-auto my-2 animate-in fade-in zoom-in-95 duration-200">
       <div className="bg-zinc-950/95 border border-zinc-800/90 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-2xl">
         
+        {/* Top Header Label */}
+        <div className="text-center mb-4">
+          <span className="text-xs font-bold tracking-widest text-zinc-500 uppercase">
+            {modeTitle}
+          </span>
+        </div>
+
         {/* Top Personal Best Banner (If applicable) */}
         {result.isPersonalBest && (
-          <div className="mb-8 p-3 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-transparent border border-amber-500/30 flex items-center justify-between gap-3 animate-pulse max-w-xl mx-auto">
+          <div className="mb-6 p-3 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-transparent border border-amber-500/30 flex items-center justify-between gap-3 animate-pulse max-w-md mx-auto">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400">
                 <Trophy className="w-5 h-5" />
               </div>
               <div className="text-left">
                 <div className="text-xs font-bold text-amber-300 uppercase tracking-wider">
-                  New Personal Best
+                  New Personal Best!
                 </div>
-                <div className="text-xs text-amber-400/80">
-                  You broke your prior speed record!
+                <div className="text-[11px] text-amber-400/80">
+                  New high score recorded
                 </div>
               </div>
             </div>
@@ -370,24 +434,18 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
           </div>
         )}
 
-        {/* CENTERED HERO SECTION: Giant Prominent Center WPM Display */}
-        <div className="flex flex-col items-center justify-center text-center pb-10 border-b border-zinc-800/80">
+        {/* CENTERED HERO SECTION: COLOR-CODED GIANT WPM */}
+        <div className="flex flex-col items-center justify-center text-center pb-8 border-b border-zinc-800/80">
           
-          {/* Mode & Speed Tier Badge Row */}
-          <div className="flex items-center justify-center gap-2 mb-3 flex-wrap">
-            <span className="text-xs uppercase font-bold tracking-widest text-zinc-500">
-              {result.mode.toUpperCase()} TEST ({result.modeValue})
-            </span>
-            <span className="text-zinc-600">·</span>
-            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${speedTier.color}`}>
-              <TierIcon className="w-3.5 h-3.5" />
-              <span>{speedTier.title}</span>
-            </div>
+          {/* Performance Status Badge */}
+          <div className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold border mb-2 ${wpmStyle.badgeBg}`}>
+            <StatusIcon className="w-3.5 h-3.5" />
+            <span>{wpmStyle.badgeText}</span>
           </div>
 
-          {/* Centered Giant WPM Number */}
-          <div className="flex flex-col items-center justify-center my-2">
-            <div className="text-8xl sm:text-9xl md:text-[10rem] font-black tracking-tight text-accent tabular-nums leading-none drop-shadow-[0_0_35px_rgba(var(--accent-rgb),0.35)]">
+          {/* Centered Giant Color-Coded WPM Number */}
+          <div className="flex flex-col items-center justify-center my-1">
+            <div className={`text-8xl sm:text-9xl md:text-[10rem] font-black tracking-tight tabular-nums leading-none ${wpmStyle.textColor} ${wpmStyle.glow}`}>
               {result.wpm}
             </div>
             <div className="text-2xl sm:text-3xl font-black text-zinc-400 tracking-widest uppercase mt-1">
@@ -398,8 +456,8 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
             </span>
           </div>
 
-          {/* Benchmark comparison & Author Note */}
-          <div className="mt-3 text-xs text-zinc-500 tabular-nums flex items-center justify-center gap-3 flex-wrap">
+          {/* Benchmark comparison / Quote Note */}
+          <div className="mt-2 text-xs text-zinc-500 tabular-nums flex items-center justify-center gap-3 flex-wrap">
             {!result.isPersonalBest && personalBestWpm > 0 && (
               <span>Personal Best: <strong className="text-zinc-300 font-semibold">{personalBestWpm} WPM</strong></span>
             )}
@@ -412,16 +470,16 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
 
         </div>
 
-        {/* SECONDARY METRICS: Clean Unboxed 4-Column Grid */}
+        {/* SECONDARY METRICS: Clean 4-Card Grid with Color-Coded Accuracy */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 my-8">
           
-          {/* Accuracy */}
+          {/* Accuracy (Color-Coded: Red if low, Yellow if normal, Blue if high) */}
           <div className="p-4 sm:p-5 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 flex flex-col items-center text-center justify-between transition-colors hover:border-zinc-700">
             <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-1.5">
-              <Target className="w-3.5 h-3.5 text-emerald-400" />
+              <Target className={`w-3.5 h-3.5 ${accuracyStyle.textColor}`} />
               Accuracy
             </span>
-            <div className="mt-2 text-3xl sm:text-4xl font-black text-emerald-400 tabular-nums">
+            <div className={`mt-2 text-3xl sm:text-4xl font-black tabular-nums ${accuracyStyle.textColor}`}>
               {result.accuracy}%
             </div>
             <span className="mt-1 text-[11px] text-zinc-500 tabular-nums">
@@ -439,14 +497,14 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
               {result.rawWpm}
             </div>
             <span className="mt-1 text-[11px] text-zinc-500 tabular-nums">
-              Gross typing rate
+              Gross typing speed
             </span>
           </div>
 
           {/* Consistency */}
           <div className="p-4 sm:p-5 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 flex flex-col items-center text-center justify-between transition-colors hover:border-zinc-700">
             <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-1.5">
-              <Activity className="w-3.5 h-3.5 text-blue-400" />
+              <Activity className="w-3.5 h-3.5 text-zinc-400" />
               Consistency
             </span>
             <div className="mt-2 text-3xl sm:text-4xl font-black text-zinc-300 tabular-nums">
@@ -457,26 +515,24 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
             </span>
           </div>
 
-          {/* Duration & Chars */}
+          {/* Duration */}
           <div className="p-4 sm:p-5 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 flex flex-col items-center text-center justify-between transition-colors hover:border-zinc-700">
             <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-purple-400" />
-              Test Time
+              <Clock className="w-3.5 h-3.5 text-zinc-400" />
+              Time
             </span>
             <div className="mt-2 text-3xl sm:text-4xl font-black text-zinc-300 tabular-nums">
               {result.durationSeconds}s
             </div>
             <span className="mt-1 text-[11px] text-zinc-500 tabular-nums">
-              {result.characters.total} total characters
+              {result.characters.total} characters
             </span>
           </div>
 
         </div>
 
-        {/* DETAILED SPEED TIMELINE GRAPH */}
+        {/* SPEED TIMELINE GRAPH */}
         <div className="mb-8">
-          
-          {/* Timeline Header & Highlight Stats Strip */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-accent" />
@@ -485,50 +541,36 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
               </span>
             </div>
 
-            {/* Micro Highlights Bar */}
             <div className="flex items-center gap-4 text-xs text-zinc-400 tabular-nums flex-wrap">
               <div>
-                <span className="text-zinc-500">Peak Burst: </span>
+                <span className="text-zinc-500">Peak: </span>
                 <span className="font-bold text-zinc-200">{peakWpm} WPM</span>
               </div>
               <span className="text-zinc-700">·</span>
               <div>
-                <span className="text-zinc-500">Average: </span>
+                <span className="text-zinc-500">Avg: </span>
                 <span className="font-bold text-zinc-200">{avgWpm} WPM</span>
-              </div>
-              <span className="text-zinc-700">·</span>
-              <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1">
-                  <span className="w-2.5 h-0.5 bg-accent rounded-full" />
-                  <span className="text-[11px]">Net WPM</span>
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2.5 h-0.5 bg-zinc-500 rounded-full border border-dashed border-zinc-400" />
-                  <span className="text-[11px]">Raw WPM</span>
-                </span>
               </div>
             </div>
           </div>
 
-          {/* Interactive SVG Chart Stage */}
+          {/* SVG Chart Stage */}
           <div className="relative w-full rounded-2xl bg-zinc-900/80 border border-zinc-800 p-3 sm:p-4 overflow-hidden">
             <svg 
               viewBox={`0 0 ${chartWidth} ${chartHeight}`} 
-              className="w-full h-40 sm:h-52 overflow-visible select-none"
+              className="w-full h-36 sm:h-44 overflow-visible select-none"
             >
               <defs>
                 <linearGradient id="wpmGradientArea" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--accent-color)" stopOpacity="0.22" />
+                  <stop offset="0%" stopColor="var(--accent-color)" stopOpacity="0.2" />
                   <stop offset="100%" stopColor="var(--accent-color)" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
 
-              {/* Horizontal Grid Ticks */}
               <line x1={paddingX} y1={paddingY} x2={chartWidth - paddingX} y2={paddingY} stroke="currentColor" strokeOpacity="0.08" className="text-zinc-700" />
               <line x1={paddingX} y1={chartHeight / 2} x2={chartWidth - paddingX} y2={chartHeight / 2} stroke="currentColor" strokeOpacity="0.08" className="text-zinc-700" />
               <line x1={paddingX} y1={chartHeight - paddingY} x2={chartWidth - paddingX} y2={chartHeight - paddingY} stroke="currentColor" strokeOpacity="0.15" className="text-zinc-600" />
 
-              {/* Y-Axis Labels */}
               <text x={paddingX - 8} y={paddingY + 4} textAnchor="end" className="text-[10px] fill-zinc-500 font-mono tabular-nums">
                 {maxWpmInHistory}
               </text>
@@ -539,12 +581,10 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
                 0
               </text>
 
-              {/* Area Gradient Under Net WPM Path */}
               {areaPathStr && (
                 <path d={areaPathStr} fill="url(#wpmGradientArea)" />
               )}
 
-              {/* Raw WPM Line */}
               {rawPathStr && (
                 <path
                   d={rawPathStr}
@@ -556,7 +596,6 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
                 />
               )}
 
-              {/* Net WPM Line */}
               {wpmPathStr && (
                 <path
                   d={wpmPathStr}
@@ -565,11 +604,9 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
                   strokeWidth="2.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)]"
                 />
               )}
 
-              {/* Interactive Data Points & Error Markers */}
               {pointsWpm.map((ptObj, i) => {
                 const isHovered = hoveredIndex === i;
                 const hasErrors = ptObj.pt.errors > 0;
@@ -587,47 +624,18 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
                       onMouseEnter={() => setHoveredIndex(i)}
                       onMouseLeave={() => setHoveredIndex(null)}
                     />
-
-                    {hasErrors && (
-                      <circle
-                        cx={ptObj.x}
-                        cy={ptObj.y}
-                        r="7"
-                        fill="none"
-                        stroke="#f43f5e"
-                        strokeWidth="1"
-                        strokeOpacity="0.4"
-                        className="animate-ping"
-                      />
-                    )}
                   </g>
                 );
               })}
-
-              {/* Hover Tooltip Overlay */}
-              {hoveredIndex !== null && pointsWpm[hoveredIndex] && (
-                <g>
-                  <line
-                    x1={pointsWpm[hoveredIndex].x}
-                    y1={paddingY}
-                    x2={pointsWpm[hoveredIndex].x}
-                    y2={chartHeight - paddingY}
-                    stroke="var(--accent-color)"
-                    strokeWidth="1"
-                    strokeDasharray="2 2"
-                    strokeOpacity="0.6"
-                  />
-                </g>
-              )}
             </svg>
 
-            {/* Floating Tooltip Card */}
+            {/* Hover Tooltip Card */}
             {hoveredIndex !== null && pointsWpm[hoveredIndex] && (
               <div 
-                className="absolute z-20 pointer-events-none p-2.5 rounded-xl bg-zinc-950 border border-zinc-700 shadow-xl text-xs flex flex-col gap-1 transition-all duration-75"
+                className="absolute z-20 pointer-events-none p-2 rounded-xl bg-zinc-950 border border-zinc-700 shadow-xl text-xs flex flex-col gap-1 transition-all"
                 style={{
                   left: `${Math.min(85, Math.max(12, (pointsWpm[hoveredIndex].x / chartWidth) * 100))}%`,
-                  top: '12px',
+                  top: '10px',
                   transform: 'translateX(-50%)'
                 }}
               >
@@ -654,17 +662,17 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
 
         {/* WEAK KEYS DRILL BANNER (If missed keys exist) */}
         {hasWeakKeys && (
-          <div className="mb-8 p-4 rounded-2xl bg-amber-950/20 border border-amber-800/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all hover:bg-amber-950/30">
+          <div className="mb-8 p-4 rounded-2xl bg-amber-950/20 border border-amber-800/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-start sm:items-center gap-3">
-              <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 shrink-0 mt-0.5 sm:mt-0">
+              <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 shrink-0">
                 <Sparkles className="w-4 h-4" />
               </div>
               <div className="text-left">
                 <div className="text-xs font-bold text-amber-300">
-                  Targeted Missed Key Drill Available
+                  Targeted Missed Key Drill
                 </div>
                 <div className="text-xs text-amber-400/80 mt-0.5 flex flex-wrap gap-1.5 items-center">
-                  <span>Keys missed during test:</span>
+                  <span>Keys missed:</span>
                   {missedKeysEntries.slice(0, 6).map(([char, count]) => (
                     <span key={char} className="font-mono font-bold text-amber-200 bg-amber-500/20 px-1.5 py-0.5 rounded text-[11px] border border-amber-500/30">
                       '{char}' ({count}x)
@@ -676,7 +684,7 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
 
             <button
               onClick={onPracticeWeakKeys}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold transition-all cursor-pointer shadow-md active:scale-98 shrink-0"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold transition-all cursor-pointer shadow-md shrink-0"
             >
               <span>Drill Missed Keys</span>
               <kbd className="hidden sm:inline text-[9px] px-1 py-0.5 rounded bg-zinc-900/30 font-mono">D</kbd>
@@ -721,10 +729,10 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
             </div>
             <div>
               <div className="text-xs font-bold text-zinc-200">
-                Share Result Card & Stats
+                Share Result Image & Stats
               </div>
               <div className="text-[11px] text-zinc-400">
-                Export an image card of your WPM score for social media or copy summary
+                Export a clean PNG card of your test score or copy text summary
               </div>
             </div>
           </div>
@@ -755,12 +763,11 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md animate-in fade-in duration-200">
           <div className="relative w-full max-w-2xl bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-2xl flex flex-col gap-5">
             
-            {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
               <div className="flex items-center gap-2">
                 <ImageIcon className="w-5 h-5 text-accent" />
                 <h3 className="text-base font-bold text-zinc-100">
-                  Export Test Result Card
+                  Export Result Card Image
                 </h3>
               </div>
               <button
@@ -771,7 +778,6 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
               </button>
             </div>
 
-            {/* Rendered Image Card Preview */}
             <div className="relative w-full rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950 shadow-inner">
               <img 
                 src={generatedImageUrl} 
@@ -780,7 +786,6 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
               />
             </div>
 
-            {/* Action Bar inside Modal */}
             <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
               <button
                 onClick={handleCopyImageToClipboard}

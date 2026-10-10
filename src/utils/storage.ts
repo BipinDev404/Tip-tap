@@ -13,12 +13,12 @@ export const DEFAULT_SETTINGS: UserSettings = {
   errorSoundEnabled: true,
   soundVolume: 0.5,
   highlightErrors: true,
-  showVirtualKeyboard: true,
+  showVirtualKeyboard: false,
   reducedMotion: false,
   smoothCaret: true,
   blindMode: false,
   focusMode: false,
-  ghostingEnabled: true
+  ghostingEnabled: false
 };
 
 export const INITIAL_DATA: TipTapUserData = {

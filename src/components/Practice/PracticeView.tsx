@@ -988,7 +988,6 @@ export const PracticeView: React.FC = () => {
                             const isIncorrect = isTyped && !isCorrect;
 
                             // Ghosting pacing calculations
-                            const isGhostPaced = settings.ghostingEnabled && isTestActive && letter.index < ghostIndex;
                             const isGhostCaret = settings.ghostingEnabled && isTestActive && letter.index === ghostIndex;
 
                             return (
@@ -1007,21 +1006,12 @@ export const PracticeView: React.FC = () => {
                                         : 'text-zinc-500'
                                 }`}
                               >
-                                {/* Ghost Pacing Translucent Text Layer */}
-                                {isGhostPaced && !isTyped && (
-                                  <span className="absolute inset-0 -inset-x-0.5 bg-indigo-500/15 rounded-xs pointer-events-none -z-10" />
-                                )}
-
-                                {/* Ghost Pacing Caret (Previous Best) */}
+                                {/* Smooth Moving Ghost Caret Line */}
                                 {isGhostCaret && (
                                   <span 
-                                    className="absolute -left-[1px] top-[18%] h-[68%] w-[2px] bg-indigo-500/80 rounded-full pointer-events-none animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.6)] z-10"
+                                    className="absolute -left-[1.5px] top-[12%] h-[76%] w-[2px] bg-accent/60 rounded-full pointer-events-none shadow-[0_0_8px_var(--accent-color)] z-10 transition-all duration-100 ease-linear opacity-80"
                                     title={`Ghost Pacer (${previousBestWpm} WPM)`}
-                                  >
-                                    <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-1 py-0.2 rounded-xs bg-indigo-600 text-[8px] font-mono text-white font-bold tracking-tighter opacity-80 whitespace-nowrap shadow-xs">
-                                      PB
-                                    </span>
-                                  </span>
+                                  />
                                 )}
 
                                 {/* Render active caret before current untyped character */}
@@ -1043,16 +1033,12 @@ export const PracticeView: React.FC = () => {
                                 ref={isSpaceCurrent ? activeCharRef : null}
                                 className="relative inline-block w-[0.25em]"
                               >
-                                {/* Ghost Space Caret */}
+                                {/* Smooth Moving Ghost Space Caret Line */}
                                 {isGhostSpaceCaret && (
                                   <span 
-                                    className="absolute -left-[1px] top-[18%] h-[68%] w-[2px] bg-indigo-500/80 rounded-full pointer-events-none animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.6)] z-10"
+                                    className="absolute -left-[1.5px] top-[12%] h-[76%] w-[2px] bg-accent/60 rounded-full pointer-events-none shadow-[0_0_8px_var(--accent-color)] z-10 transition-all duration-100 ease-linear opacity-80"
                                     title={`Ghost Pacer (${previousBestWpm} WPM)`}
-                                  >
-                                    <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-1 py-0.2 rounded-xs bg-indigo-600 text-[8px] font-mono text-white font-bold tracking-tighter opacity-80 whitespace-nowrap shadow-xs">
-                                      PB
-                                    </span>
-                                  </span>
+                                  />
                                 )}
 
                                 {isSpaceCurrent && (
