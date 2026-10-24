@@ -205,16 +205,40 @@ export const PracticeView: React.FC = () => {
     };
   }, [focusInput, isCustomModalOpen, isTestFinished]);
 
-  // Dynamic line height based on font size setting and mobile viewport
+  // Detect small or short displays so both Typing Box and Keyboard Box scale down together to fit 100% on screen
+  const [isSmallDisplay, setIsSmallDisplay] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 768 || window.innerHeight < 800;
+  });
+
+  useEffect(() => {
+    const updateDisplaySize = () => {
+      setIsSmallDisplay(window.innerWidth < 768 || window.innerHeight < 800);
+    };
+    updateDisplaySize();
+    window.addEventListener('resize', updateDisplaySize);
+    return () => window.removeEventListener('resize', updateDisplaySize);
+  }, []);
+
+  // Dynamic line height based on font size setting and viewport size
   const lineHeightPx = useMemo(() => {
-    switch (settings.fontSize) {
-      case 'sm': return 42;
-      case 'md': return 48;
-      case 'xl': return 68;
-      case 'lg':
-      default: return 56;
+    if (isSmallDisplay) {
+      switch (settings.fontSize) {
+        case 'sm': return 34;
+        case 'md': return 38;
+        case 'xl': return 48;
+        case 'lg':
+        default: return 42;
+      }
     }
-  }, [settings.fontSize]);
+    switch (settings.fontSize) {
+      case 'sm': return 40;
+      case 'md': return 46;
+      case 'xl': return 60;
+      case 'lg':
+      default: return 50;
+    }
+  }, [settings.fontSize, isSmallDisplay]);
 
   // Finish Test Calculation
   const finishTest = useCallback(() => {
@@ -617,19 +641,28 @@ export const PracticeView: React.FC = () => {
     return 60; // Default gentle pacing baseline if no prior tests recorded
   }, [results, mode, personalBestWpm]);
 
-  // Font size mapping for typing text (Phone responsive)
+  // Font size mapping for typing text (Responsive to small & short displays)
   const fontSizeClass = useMemo(() => {
+    if (isSmallDisplay) {
+      switch (settings.fontSize) {
+        case 'sm': return 'text-base sm:text-lg leading-relaxed tracking-normal';
+        case 'md': return 'text-lg sm:text-xl leading-relaxed tracking-normal';
+        case 'xl': return 'text-2xl sm:text-3xl leading-relaxed tracking-normal';
+        case 'lg':
+        default: return 'text-xl sm:text-2xl leading-relaxed tracking-normal';
+      }
+    }
     switch (settings.fontSize) {
       case 'sm': return 'text-lg sm:text-xl md:text-2xl leading-relaxed tracking-normal';
       case 'md': return 'text-xl sm:text-2xl md:text-3xl leading-relaxed tracking-normal';
-      case 'xl': return 'text-3xl sm:text-4xl md:text-5xl leading-relaxed tracking-normal';
+      case 'xl': return 'text-2xl sm:text-3xl md:text-4xl leading-relaxed tracking-normal';
       case 'lg':
-      default: return 'text-2xl sm:text-3xl md:text-4xl leading-relaxed tracking-normal';
+      default: return 'text-xl sm:text-2xl md:text-3xl leading-relaxed tracking-normal';
     }
-  }, [settings.fontSize]);
+  }, [settings.fontSize, isSmallDisplay]);
 
   return (
-    <div className="w-full flex flex-col items-center justify-start min-h-[calc(100vh-80px)] py-3 sm:py-8 px-3 sm:px-4 max-w-5xl mx-auto">
+    <div className="w-full flex flex-col items-center justify-start py-2 sm:py-3 px-2.5 sm:px-4 max-w-5xl mx-auto">
       
       {/* If test is finished, render Results Screen */}
       {isTestFinished && finishedResult ? (
@@ -650,7 +683,7 @@ export const PracticeView: React.FC = () => {
       ) : (
         <>
           {/* Mode Selector and Controls Deck - Distinct Mini-Boxes aligned Left & Right on Desktop, Ergonomic on Mobile */}
-          <div className={`w-full max-w-4xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 sm:gap-3 mb-4 sm:mb-6 transition-all duration-300 ${
+          <div className={`w-full max-w-4xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2 mb-2 sm:mb-3 transition-all duration-300 ${
             settings.focusMode && isTestActive
               ? 'opacity-0 pointer-events-none max-h-0 py-0 mb-0 overflow-hidden border-transparent'
               : isTestActive ? 'opacity-35 hover:opacity-100' : 'opacity-100'
@@ -880,7 +913,7 @@ export const PracticeView: React.FC = () => {
           )}
 
           {/* Live Telemetry Bar - Hides in Focus Mode during active typing */}
-          <div className={`w-full max-w-4xl flex items-center justify-between px-2 mb-3 text-xs font-medium text-zinc-400 transition-all duration-300 ${
+          <div className={`w-full max-w-4xl flex items-center justify-between px-2 mb-1.5 sm:mb-2 text-xs font-medium text-zinc-400 transition-all duration-300 ${
             settings.focusMode && isTestActive
               ? 'opacity-0 pointer-events-none max-h-0 mb-0 overflow-hidden'
               : 'opacity-100'
@@ -930,66 +963,70 @@ export const PracticeView: React.FC = () => {
             </div>
           </div>
 
-          {/* Centered Distraction-Free Linear Typing Stage */}
-          <div
-            onClick={focusInput}
-            className={`relative w-full max-w-4xl rounded-2xl sm:rounded-3xl mt-3 sm:mt-6 mb-6 sm:mb-10 py-6 sm:py-10 px-3 sm:px-6 md:px-8 cursor-pointer select-none bg-zinc-950/90 border transition-all duration-300 shadow-2xl backdrop-blur-md group overflow-hidden ${
-              isInputFocused 
-                ? 'border-zinc-800 ring-1 ring-zinc-800/60' 
-                : 'border-zinc-800/80 hover:border-zinc-700'
-            }`}
-          >
-            {/* Blurry state overlay if cursor is not inside the practice box */}
-            {!isInputFocused && (
-              <div 
-                onClick={focusInput}
-                className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-zinc-950/50 backdrop-blur-[3px] rounded-2xl sm:rounded-3xl cursor-pointer animate-in fade-in duration-200 p-4 text-center touch-manipulation"
-              >
-                <div className="flex items-center gap-2 sm:gap-2.5 px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl bg-zinc-900 border border-zinc-700/80 text-zinc-100 shadow-2xl hover:border-accent hover:bg-zinc-850 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group">
-                  <MousePointerClick className="w-4 h-4 text-accent group-hover:scale-110 transition-transform" />
-                  <span className="text-xs sm:text-sm font-semibold tracking-wide">Tap or click here to start typing</span>
-                </div>
-                <span className="text-[10px] sm:text-[11px] text-zinc-400 mt-2 font-mono">or tap anywhere to open keyboard</span>
-              </div>
-            )}
-
-            {/* Transparent Input covering the typing stage on mobile/desktop */}
-            <input
-              ref={inputRef}
-              type="text"
-              autoComplete="off"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck="false"
-              inputMode="text"
-              enterKeyHint="done"
-              aria-label="Typing test input"
-              className="absolute inset-0 w-full h-full opacity-0 z-20 cursor-text touch-manipulation text-base"
-              onKeyDown={handleKeyDown}
-              onChange={handleInputChange}
-              onBeforeInput={handleBeforeInput}
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
-              tabIndex={0}
-            />
-
-            {/* Distraction-Free Natural Typing View (Monkeytype-grade wrap & smooth line scroll) */}
+          {/* Unified Stage: Typing Box & Keyboard Box matched at exact same width (max-w-4xl) and visible together */}
+          <div className="w-full max-w-4xl flex flex-col items-stretch gap-2.5 sm:gap-3.5">
+            {/* Centered Distraction-Free Linear Typing Box */}
             <div
-              ref={textContainerRef}
-              className={`relative overflow-hidden select-none font-normal transition-all duration-300 w-full px-4 sm:px-8 ${
-                !isInputFocused ? 'filter blur-[5px] opacity-25 pointer-events-none select-none' : 'filter-none opacity-100'
-              } ${fontSizeClass}`}
-              style={{
-                fontFamily: 'var(--font-custom)',
-                height: `${lineHeightPx * 3}px`,
-                maskImage: scrollOffset > 8
-                  ? 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,1) 18%, rgba(0,0,0,1) 82%, transparent 100%)'
-                  : 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 82%, transparent 100%)',
-                WebkitMaskImage: scrollOffset > 8
-                  ? 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,1) 18%, rgba(0,0,0,1) 82%, transparent 100%)'
-                  : 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 82%, transparent 100%)'
-              }}
+              onClick={focusInput}
+              className={`relative w-full rounded-2xl sm:rounded-3xl ${
+                isSmallDisplay ? 'py-3.5 sm:py-5 px-3 sm:px-5' : 'py-5 sm:py-7 px-4 sm:px-6 md:px-8'
+              } cursor-pointer select-none bg-zinc-950/90 border transition-all duration-300 shadow-2xl backdrop-blur-md group overflow-hidden ${
+                isInputFocused 
+                  ? 'border-zinc-800/90 ring-1 ring-zinc-800/60' 
+                  : 'border-zinc-800/80 hover:border-zinc-700'
+              }`}
             >
+              {/* Blurry state overlay if cursor is not inside the practice box */}
+              {!isInputFocused && (
+                <div 
+                  onClick={focusInput}
+                  className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-zinc-950/50 backdrop-blur-[3px] rounded-2xl sm:rounded-3xl cursor-pointer animate-in fade-in duration-200 p-4 text-center touch-manipulation"
+                >
+                  <div className="flex items-center gap-2 sm:gap-2.5 px-5 sm:px-6 py-2 sm:py-2.5 rounded-2xl bg-zinc-900 border border-zinc-700/80 text-zinc-100 shadow-2xl hover:border-accent hover:bg-zinc-850 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group">
+                    <MousePointerClick className="w-4 h-4 text-accent group-hover:scale-110 transition-transform" />
+                    <span className="text-xs sm:text-sm font-semibold tracking-wide">Tap or click here to start typing</span>
+                  </div>
+                  <span className="text-[10px] sm:text-[11px] text-zinc-400 mt-1.5 font-mono">or tap anywhere to focus keyboard</span>
+                </div>
+              )}
+
+              {/* Transparent Input covering the typing stage on mobile/desktop */}
+              <input
+                ref={inputRef}
+                type="text"
+                autoComplete="off"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
+                inputMode="text"
+                enterKeyHint="done"
+                aria-label="Typing test input"
+                className="absolute inset-0 w-full h-full opacity-0 z-20 cursor-text touch-manipulation text-base"
+                onKeyDown={handleKeyDown}
+                onChange={handleInputChange}
+                onBeforeInput={handleBeforeInput}
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
+                tabIndex={0}
+              />
+
+              {/* Distraction-Free Natural Typing View (Monkeytype-grade wrap & smooth line scroll) */}
+              <div
+                ref={textContainerRef}
+                className={`relative overflow-hidden select-none font-normal transition-all duration-300 w-full px-2 sm:px-4 ${
+                  !isInputFocused ? 'filter blur-[5px] opacity-25 pointer-events-none select-none' : 'filter-none opacity-100'
+                } ${fontSizeClass}`}
+                style={{
+                  fontFamily: 'var(--font-custom)',
+                  height: `${lineHeightPx * 3}px`,
+                  maskImage: scrollOffset > 8
+                    ? 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,1) 18%, rgba(0,0,0,1) 82%, transparent 100%)'
+                    : 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 82%, transparent 100%)',
+                  WebkitMaskImage: scrollOffset > 8
+                    ? 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,1) 18%, rgba(0,0,0,1) 82%, transparent 100%)'
+                    : 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 82%, transparent 100%)'
+                }}
+              >
               <div
                 ref={wordsWrapperRef}
                 className="w-full flex flex-wrap items-center justify-start content-start transition-transform duration-200 ease-out will-change-transform py-1"
@@ -1069,46 +1106,52 @@ export const PracticeView: React.FC = () => {
               </div>
             </div>
 
-            {/* Author Attribution for Quote Mode */}
-            {activeQuote && (
-              <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800/60 text-right">
-                <span className="text-xs italic text-zinc-400">— {activeQuote.author}</span>
-              </div>
-            )}
+              {/* Author Attribution for Quote Mode */}
+              {activeQuote && (
+                <div className="mt-2 pt-2 border-t border-zinc-100 dark:border-zinc-800/60 text-right">
+                  <span className="text-xs italic text-zinc-400">— {activeQuote.author}</span>
+                </div>
+              )}
 
-            {/* Subtle Hint on Idle when focused */}
-            {isInputFocused && !isTestActive && typedText.length === 0 && (
-              <div className="absolute inset-x-0 bottom-3 text-center pointer-events-none">
-                <span className="text-[11px] text-zinc-500 tracking-wide font-medium">
-                  Start typing to begin test · timer starts on first key
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Quick Shortcuts & Mobile Controls */}
-          <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row items-center justify-center gap-2 text-center">
-            <button
-              onClick={() => resetTest(false)}
-              className="sm:hidden flex items-center gap-1.5 px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-medium text-zinc-300 hover:text-white active:scale-95 transition-all shadow-xs cursor-pointer touch-manipulation"
-            >
-              <RotateCcw className="w-3.5 h-3.5 text-accent" />
-              <span>Restart Test</span>
-            </button>
-            <span className="text-[11px] text-zinc-400/80 font-mono hidden sm:inline">
-              tab + enter — restart test · esc — reset
-            </span>
-          </div>
-
-          {/* Interactive Virtual Keyboard */}
-          {settings.showVirtualKeyboard && (
-            <div className="w-full max-w-2xl mt-4 sm:mt-6 animate-in fade-in duration-300">
-              <VirtualKeyboard
-                expectedKey={currentExpectedChar}
-                activeKeyPressed={lastKeyPressed}
-              />
+              {/* Subtle Hint on Idle when focused */}
+              {isInputFocused && !isTestActive && typedText.length === 0 && (
+                <div className="absolute inset-x-0 bottom-2 text-center pointer-events-none">
+                  <span className="text-[10px] sm:text-[11px] text-zinc-500 tracking-wide font-medium">
+                    Start typing to begin test · timer starts on first key
+                  </span>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Interactive Virtual Keyboard Box — Exact same width (max-w-4xl) as Typing Box */}
+            {settings.showVirtualKeyboard && (
+              <div className="w-full animate-in fade-in duration-300">
+                <VirtualKeyboard
+                  expectedKey={currentExpectedChar}
+                  activeKeyPressed={lastKeyPressed}
+                  compact={isSmallDisplay}
+                  onKeyPress={(char) => {
+                    focusInput();
+                    processTypedChar(char);
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Quick Shortcuts & Mobile Controls */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-center pt-0.5">
+              <button
+                onClick={() => resetTest(false)}
+                className="sm:hidden flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-medium text-zinc-300 hover:text-white active:scale-95 transition-all shadow-xs cursor-pointer touch-manipulation"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-accent" />
+                <span>Restart Test</span>
+              </button>
+              <span className="text-[11px] text-zinc-400/80 font-mono hidden sm:inline">
+                tab + enter — restart test · esc — reset
+              </span>
+            </div>
+          </div>
         </>
       )}
 
