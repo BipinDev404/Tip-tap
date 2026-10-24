@@ -62,10 +62,20 @@ export const LessonModal: React.FC<LessonModalProps> = ({
 
   // Handle physical keystrokes
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (isCompleted) return;
-
     if (e.key === 'Escape') {
       onClose();
+      return;
+    }
+
+    if (isCompleted) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (passedCriteria && onNextLesson) {
+          onNextLesson();
+        } else {
+          resetLesson();
+        }
+      }
       return;
     }
 

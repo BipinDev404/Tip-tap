@@ -331,6 +331,8 @@ export const PracticeView: React.FC = () => {
     });
 
     setFinishedResult(resultData);
+    inputRef.current?.blur();
+    setIsInputFocused(false);
     playCompleteSound();
   }, [startTime, typedText, targetText, mode, timeOption, wordsOption, quoteLength, activeQuote, addTestResult, playCompleteSound]);
 

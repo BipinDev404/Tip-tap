@@ -401,29 +401,44 @@ export const ResultsModal: React.FC<ResultsModalProps> = ({
   const hasWeakKeys = Object.keys(result.missedKeys).length > 0;
   const missedKeysEntries = Object.entries(result.missedKeys).sort((a, b) => b[1] - a[1]);
 
-  // Global keyboard shortcuts while results modal is active
+  const tabPressedRef = React.useRef<boolean>(false);
+  const tabTimerRef = React.useRef<number | null>(null);
+
+  // Global keyboard shortcuts while results modal is active (Tab + Enter to start next test)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
 
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        onNewTest();
-      } else if (e.key === 'r' || e.key === 'R') {
-        e.preventDefault();
-        onRetry();
-      } else if ((e.key === 'd' || e.key === 'D') && hasWeakKeys) {
-        e.preventDefault();
-        onPracticeWeakKeys();
-      } else if (e.key === 's' || e.key === 'S') {
-        e.preventDefault();
-        handleOpenShareModal();
+      // Track Tab key press window
+      if (e.key === 'Tab') {
+        tabPressedRef.current = true;
+        if (tabTimerRef.current) window.clearTimeout(tabTimerRef.current);
+        tabTimerRef.current = window.setTimeout(() => {
+          tabPressedRef.current = false;
+        }, 1500);
+        return;
       }
+
+      // Tab + Enter shortcut triggers Next Test
+      if (e.key === 'Enter' && tabPressedRef.current) {
+        e.preventDefault();
+        tabPressedRef.current = false;
+        if (tabTimerRef.current) window.clearTimeout(tabTimerRef.current);
+        onNewTest();
+        return;
+      }
+
+      // Explicitly ignore Space, standalone Enter, and letter keys (r, s, d, etc.)
+      // so accidental key presses on results screen NEVER start a new session
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onNewTest, onRetry, onPracticeWeakKeys, hasWeakKeys]);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      if (tabTimerRef.current) window.clearTimeout(tabTimerRef.current);
+    };
+  }, [onNewTest]);
 
   const StatusIcon = wpmStyle.icon;
 
