@@ -662,7 +662,11 @@ export const PracticeView: React.FC = () => {
   }, [settings.fontSize, isSmallDisplay]);
 
   return (
-    <div className="w-full flex flex-col items-center justify-start py-2 sm:py-3 px-2.5 sm:px-4 max-w-5xl mx-auto">
+    <div
+      className={`w-full flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-135px)] px-2.5 sm:px-4 max-w-5xl mx-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        settings.showVirtualKeyboard ? 'py-1.5 sm:py-3' : 'py-6 sm:py-12'
+      }`}
+    >
       
       {/* If test is finished, render Results Screen */}
       {isTestFinished && finishedResult ? (
@@ -681,12 +685,20 @@ export const PracticeView: React.FC = () => {
           }}
         />
       ) : (
-        <>
-          {/* Mode Selector and Controls Deck - Distinct Mini-Boxes aligned Left & Right on Desktop, Ergonomic on Mobile */}
-          <div className={`w-full max-w-4xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2 mb-2 sm:mb-3 transition-all duration-300 ${
+        <div
+          className={`w-full max-w-4xl flex flex-col items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            settings.showVirtualKeyboard
+              ? 'translate-y-0'
+              : 'translate-y-1 sm:translate-y-2'
+          }`}
+        >
+          {/* Mode Selector and Controls Deck - Smoothly shifts down with more breathing room when keyboard is off */}
+          <div className={`w-full flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
             settings.focusMode && isTestActive
               ? 'opacity-0 pointer-events-none max-h-0 py-0 mb-0 overflow-hidden border-transparent'
-              : isTestActive ? 'opacity-35 hover:opacity-100' : 'opacity-100'
+              : isTestActive
+                ? `opacity-35 hover:opacity-100 ${settings.showVirtualKeyboard ? 'mb-2 sm:mb-2.5' : 'mb-4 sm:mb-6'}`
+                : `opacity-100 ${settings.showVirtualKeyboard ? 'mb-2 sm:mb-2.5' : 'mb-4 sm:mb-6'}`
           }`}>
             
             {/* Left Deck: Mode Mini-Box & Speed/Option Mini-Box */}
@@ -913,10 +925,10 @@ export const PracticeView: React.FC = () => {
           )}
 
           {/* Live Telemetry Bar - Hides in Focus Mode during active typing */}
-          <div className={`w-full max-w-4xl flex items-center justify-between px-2 mb-1.5 sm:mb-2 text-xs font-medium text-zinc-400 transition-all duration-300 ${
+          <div className={`w-full flex items-center justify-between px-2 text-xs font-medium text-zinc-400 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
             settings.focusMode && isTestActive
               ? 'opacity-0 pointer-events-none max-h-0 mb-0 overflow-hidden'
-              : 'opacity-100'
+              : `opacity-100 ${settings.showVirtualKeyboard ? 'mb-1.5 sm:mb-2' : 'mb-2.5 sm:mb-3.5'}`
           }`}>
             <div className="flex items-center gap-3 sm:gap-5 tabular-nums text-[11px] sm:text-xs">
               {mode === 'time' && (
@@ -963,14 +975,18 @@ export const PracticeView: React.FC = () => {
             </div>
           </div>
 
-          {/* Unified Stage: Typing Box & Keyboard Box matched at exact same width (max-w-4xl) and visible together */}
-          <div className="w-full max-w-4xl flex flex-col items-stretch gap-2.5 sm:gap-3.5">
+          {/* Unified Stage: Typing Box & Keyboard Box matched at exact same width (max-w-4xl) with smooth up/down transition */}
+          <div className="w-full flex flex-col items-stretch">
             {/* Centered Distraction-Free Linear Typing Box */}
             <div
               onClick={focusInput}
               className={`relative w-full rounded-2xl sm:rounded-3xl ${
-                isSmallDisplay ? 'py-3.5 sm:py-5 px-3 sm:px-5' : 'py-5 sm:py-7 px-4 sm:px-6 md:px-8'
-              } cursor-pointer select-none bg-zinc-950/90 border transition-all duration-300 shadow-2xl backdrop-blur-md group overflow-hidden ${
+                !settings.showVirtualKeyboard
+                  ? 'py-7 sm:py-10 px-4 sm:px-7 md:px-10'
+                  : isSmallDisplay
+                    ? 'py-3.5 sm:py-5 px-3 sm:px-5'
+                    : 'py-5 sm:py-7 px-4 sm:px-6 md:px-8'
+              } cursor-pointer select-none bg-zinc-950/90 border transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-2xl backdrop-blur-md group overflow-hidden ${
                 isInputFocused 
                   ? 'border-zinc-800/90 ring-1 ring-zinc-800/60' 
                   : 'border-zinc-800/80 hover:border-zinc-700'
@@ -1123,9 +1139,16 @@ export const PracticeView: React.FC = () => {
               )}
             </div>
 
-            {/* Interactive Virtual Keyboard Box — Exact same width (max-w-4xl) as Typing Box */}
-            {settings.showVirtualKeyboard && (
-              <div className="w-full animate-in fade-in duration-300">
+            {/* Interactive Virtual Keyboard Box — Smoothly expands/collapses so typing board glides up & down */}
+            <div
+              aria-hidden={!settings.showVirtualKeyboard}
+              className={`w-full grid transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                settings.showVirtualKeyboard
+                  ? 'grid-rows-[1fr] opacity-100 translate-y-0 mt-2.5 sm:mt-3.5'
+                  : 'grid-rows-[0fr] opacity-0 -translate-y-2 pointer-events-none mt-0'
+              }`}
+            >
+              <div className="overflow-hidden min-h-0">
                 <VirtualKeyboard
                   expectedKey={currentExpectedChar}
                   activeKeyPressed={lastKeyPressed}
@@ -1136,10 +1159,14 @@ export const PracticeView: React.FC = () => {
                   }}
                 />
               </div>
-            )}
+            </div>
 
             {/* Quick Shortcuts & Mobile Controls */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-center pt-0.5">
+            <div
+              className={`flex flex-col sm:flex-row items-center justify-center gap-2 text-center transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                settings.showVirtualKeyboard ? 'mt-2 sm:mt-2.5' : 'mt-4 sm:mt-5'
+              }`}
+            >
               <button
                 onClick={() => resetTest(false)}
                 className="sm:hidden flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-medium text-zinc-300 hover:text-white active:scale-95 transition-all shadow-xs cursor-pointer touch-manipulation"
@@ -1152,7 +1179,7 @@ export const PracticeView: React.FC = () => {
               </span>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {/* Custom Text Modal */}
