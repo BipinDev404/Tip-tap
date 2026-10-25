@@ -692,56 +692,62 @@ export const PracticeView: React.FC = () => {
               : 'translate-y-1 sm:translate-y-2'
           }`}
         >
-          {/* Mode Selector and Controls Deck - Smoothly shifts down with more breathing room when keyboard is off */}
-          <div className={`w-full flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          {/* Mode Selector and Controls Deck - Flush full-width row when Keyboard is ON; Symmetric 2-Up & 2-Down equal-sized pairs when Keyboard is OFF */}
+          <div className={`w-full flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-2.5 sm:gap-3 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
             settings.focusMode && isTestActive
               ? 'opacity-0 pointer-events-none max-h-0 py-0 mb-0 overflow-hidden border-transparent'
               : isTestActive
-                ? `opacity-35 hover:opacity-100 ${settings.showVirtualKeyboard ? 'mb-2 sm:mb-2.5' : 'mb-4 sm:mb-6'}`
-                : `opacity-100 ${settings.showVirtualKeyboard ? 'mb-2 sm:mb-2.5' : 'mb-4 sm:mb-6'}`
+                ? `opacity-35 hover:opacity-100 ${settings.showVirtualKeyboard ? 'mb-2 sm:mb-2.5' : 'mb-5 sm:mb-7'}`
+                : `opacity-100 ${settings.showVirtualKeyboard ? 'mb-2 sm:mb-2.5' : 'mb-5 sm:mb-7'}`
           }`}>
             
-            {/* Left Deck: Mode Mini-Box & Speed/Option Mini-Box */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+            {/* Left Side: 2 Feature Boxes (Identical size stacked Up & Down on Left when Keyboard is OFF; Side-by-Side when Keyboard is ON) */}
+            <div className={`flex flex-col ${
+              settings.showVirtualKeyboard
+                ? 'lg:flex-row items-stretch lg:items-center gap-2'
+                : 'items-stretch sm:items-start gap-2.5'
+            } w-full sm:w-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]`}>
               
-              {/* Mini-Box 1: Test Mode Selection (4 equal columns on mobile for clean phone layout) */}
-              <div className="grid grid-cols-4 sm:flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm shrink-0">
+              {/* Top-Left Box (Mini-Box 1): Test Mode Selection */}
+              <div className={`grid grid-cols-4 items-center gap-1 p-1.5 rounded-2xl bg-zinc-900/95 border border-zinc-800/90 shadow-md shrink-0 h-[42px] ${
+                settings.showVirtualKeyboard ? 'w-full sm:w-[310px]' : 'w-full sm:w-[330px]'
+              }`}>
                 <button
                   onClick={() => { setMode('time'); setPracticeTargetWords(null); focusInput(); }}
-                  className={`flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-medium transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
+                  className={`flex items-center justify-center gap-1.5 px-2 h-full rounded-xl text-[11px] sm:text-xs font-medium transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
                     mode === 'time' && !practiceTargetWords
                       ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
-                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent'
                   }`}
                   title="Timed speed test"
                 >
-                  <Clock className={`w-3.5 h-3.5 ${mode === 'time' && !practiceTargetWords ? 'text-accent' : ''}`} />
+                  <Clock className={`w-3.5 h-3.5 shrink-0 ${mode === 'time' && !practiceTargetWords ? 'text-accent' : ''}`} />
                   <span>Time</span>
                 </button>
 
                 <button
                   onClick={() => { setMode('words'); setPracticeTargetWords(null); focusInput(); }}
-                  className={`flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-medium transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
+                  className={`flex items-center justify-center gap-1.5 px-2 h-full rounded-xl text-[11px] sm:text-xs font-medium transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
                     mode === 'words' && !practiceTargetWords
                       ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
-                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent'
                   }`}
                   title="Word count test"
                 >
-                  <FileText className={`w-3.5 h-3.5 ${mode === 'words' && !practiceTargetWords ? 'text-accent' : ''}`} />
+                  <FileText className={`w-3.5 h-3.5 shrink-0 ${mode === 'words' && !practiceTargetWords ? 'text-accent' : ''}`} />
                   <span>Words</span>
                 </button>
 
                 <button
                   onClick={() => { setMode('quote'); setPracticeTargetWords(null); focusInput(); }}
-                  className={`flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-medium transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
+                  className={`flex items-center justify-center gap-1.5 px-2 h-full rounded-xl text-[11px] sm:text-xs font-medium transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
                     mode === 'quote' && !practiceTargetWords
                       ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
-                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent'
                   }`}
                   title="Quote transcription mode"
                 >
-                  <QuoteIcon className={`w-3.5 h-3.5 ${mode === 'quote' && !practiceTargetWords ? 'text-accent' : ''}`} />
+                  <QuoteIcon className={`w-3.5 h-3.5 shrink-0 ${mode === 'quote' && !practiceTargetWords ? 'text-accent' : ''}`} />
                   <span>Quote</span>
                 </button>
 
@@ -750,30 +756,32 @@ export const PracticeView: React.FC = () => {
                     setMode('custom');
                     setIsCustomModalOpen(true);
                   }}
-                  className={`flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-medium transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
+                  className={`flex items-center justify-center gap-1.5 px-2 h-full rounded-xl text-[11px] sm:text-xs font-medium transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
                     mode === 'custom' || practiceTargetWords
                       ? 'bg-zinc-800 text-white border border-zinc-700 shadow-xs font-semibold'
-                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent'
                   }`}
                   title="Custom text drill"
                 >
-                  <Edit3 className={`w-3.5 h-3.5 ${mode === 'custom' || practiceTargetWords ? 'text-accent' : ''}`} />
+                  <Edit3 className={`w-3.5 h-3.5 shrink-0 ${mode === 'custom' || practiceTargetWords ? 'text-accent' : ''}`} />
                   <span>Custom</span>
                 </button>
               </div>
 
-              {/* Mini-Box 2: Duration / Speed / Option Mini-Box */}
+              {/* Bottom-Left Box (Mini-Box 2): Exact same width & height as Top-Left Box */}
               {mode === 'time' && !practiceTargetWords && (
-                <div className="flex items-center justify-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm shrink-0 animate-in fade-in duration-150">
-                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-1.5 sm:px-2">Duration</span>
+                <div className={`flex items-center justify-between gap-1 p-1.5 rounded-2xl bg-zinc-900/95 border border-zinc-800/90 shadow-md shrink-0 h-[42px] animate-in fade-in duration-150 ${
+                  settings.showVirtualKeyboard ? 'w-full sm:w-[235px]' : 'w-full sm:w-[330px]'
+                }`}>
+                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-2 shrink-0">Duration</span>
                   {([15, 30, 60, 120] as TimeOption[]).map(t => (
                     <button
                       key={t}
                       onClick={() => { setTimeOption(t); focusInput(); }}
-                      className={`flex-1 sm:flex-none px-2 sm:px-2.5 py-1 text-xs font-medium rounded-xl transition-all tabular-nums cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
+                      className={`flex-1 h-full px-2 text-xs font-medium rounded-xl transition-all tabular-nums cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
                         timeOption === t
                           ? 'bg-zinc-800 text-accent border border-zinc-700 font-bold shadow-xs'
-                          : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                          : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent'
                       }`}
                     >
                       {t}s
@@ -783,16 +791,18 @@ export const PracticeView: React.FC = () => {
               )}
 
               {mode === 'words' && !practiceTargetWords && (
-                <div className="flex items-center justify-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm shrink-0 animate-in fade-in duration-150">
-                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-1.5 sm:px-2">Count</span>
+                <div className={`flex items-center justify-between gap-1 p-1.5 rounded-2xl bg-zinc-900/95 border border-zinc-800/90 shadow-md shrink-0 h-[42px] animate-in fade-in duration-150 ${
+                  settings.showVirtualKeyboard ? 'w-full sm:w-[235px]' : 'w-full sm:w-[330px]'
+                }`}>
+                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-2 shrink-0">Count</span>
                   {([10, 25, 50, 100] as WordsOption[]).map(w => (
                     <button
                       key={w}
                       onClick={() => { setWordsOption(w); focusInput(); }}
-                      className={`flex-1 sm:flex-none px-2 sm:px-2.5 py-1 text-xs font-medium rounded-xl transition-all tabular-nums cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
+                      className={`flex-1 h-full px-2 text-xs font-medium rounded-xl transition-all tabular-nums cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
                         wordsOption === w
                           ? 'bg-zinc-800 text-accent border border-zinc-700 font-bold shadow-xs'
-                          : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                          : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent'
                       }`}
                     >
                       {w}
@@ -802,16 +812,18 @@ export const PracticeView: React.FC = () => {
               )}
 
               {mode === 'quote' && !practiceTargetWords && (
-                <div className="flex items-center justify-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm shrink-0 animate-in fade-in duration-150">
-                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-1.5 sm:px-2">Length</span>
+                <div className={`flex items-center justify-between gap-1 p-1.5 rounded-2xl bg-zinc-900/95 border border-zinc-800/90 shadow-md shrink-0 h-[42px] animate-in fade-in duration-150 ${
+                  settings.showVirtualKeyboard ? 'w-full sm:w-[235px]' : 'w-full sm:w-[330px]'
+                }`}>
+                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-2 shrink-0">Length</span>
                   {(['short', 'medium', 'long'] as QuoteLength[]).map(ql => (
                     <button
                       key={ql}
                       onClick={() => { setQuoteLength(ql); focusInput(); }}
-                      className={`flex-1 sm:flex-none px-2 sm:px-2.5 py-1 text-xs font-medium rounded-xl capitalize transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
+                      className={`flex-1 h-full px-2 text-xs font-medium rounded-xl capitalize transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
                         quoteLength === ql
                           ? 'bg-zinc-800 text-accent border border-zinc-700 font-bold shadow-xs'
-                          : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                          : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent'
                       }`}
                     >
                       {ql}
@@ -821,85 +833,105 @@ export const PracticeView: React.FC = () => {
               )}
 
               {(mode === 'custom' || practiceTargetWords) && (
-                <div className="flex items-center justify-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm shrink-0 animate-in fade-in duration-150">
+                <div className={`flex items-center justify-between gap-1 p-1.5 rounded-2xl bg-zinc-900/95 border border-zinc-800/90 shadow-md shrink-0 h-[42px] animate-in fade-in duration-150 ${
+                  settings.showVirtualKeyboard ? 'w-full sm:w-[235px]' : 'w-full sm:w-[330px]'
+                }`}>
+                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-2 shrink-0">Custom</span>
                   <button
                     onClick={() => setIsCustomModalOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-xl bg-zinc-800 text-accent border border-zinc-700 hover:bg-zinc-750 transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95"
+                    className="flex-1 h-full flex items-center justify-center gap-1.5 px-3 text-xs font-medium rounded-xl bg-zinc-800 text-accent border border-zinc-700 hover:bg-zinc-750 transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95"
                   >
-                    <Edit3 className="w-3 h-3" />
-                    <span>Edit Custom</span>
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Edit Text</span>
                   </button>
                 </div>
               )}
             </div>
 
-            {/* Right Deck: Modifiers Mini-Box & Tools/Controls Mini-Box */}
-            <div className="flex items-center justify-between sm:justify-end gap-2 w-full md:w-auto">
+            {/* Right Side: 2 Feature Boxes (Identical size stacked Up & Down on Right when Keyboard is OFF; Side-by-Side when Keyboard is ON) */}
+            <div className={`flex flex-col ${
+              settings.showVirtualKeyboard
+                ? 'lg:flex-row items-stretch lg:items-center justify-end gap-2'
+                : 'items-stretch sm:items-end justify-start gap-2.5'
+            } w-full sm:w-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]`}>
               
-              {/* Mini-Box 3: Modifiers (Punctuation & Numbers) */}
-              {mode !== 'quote' && !practiceTargetWords && (
-                <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm shrink-0">
-                  <button
-                    onClick={() => { setHasPunctuation(p => !p); focusInput(); }}
-                    className={`px-2 sm:px-2.5 py-1 text-xs font-medium rounded-xl transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
-                      hasPunctuation
-                        ? 'bg-zinc-800 text-accent border border-zinc-700 font-semibold shadow-xs'
-                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
-                    }`}
-                    title="Toggle punctuation marks"
-                  >
-                    @ punct
-                  </button>
-                  <button
-                    onClick={() => { setHasNumbers(n => !n); focusInput(); }}
-                    className={`px-2 sm:px-2.5 py-1 text-xs font-medium rounded-xl transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
-                      hasNumbers
-                        ? 'bg-zinc-800 text-accent border border-zinc-700 font-semibold shadow-xs'
-                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
-                    }`}
-                    title="Toggle number digits"
-                  >
-                    # numbers
-                  </button>
-                </div>
-              )}
+              {/* Top-Right Box (Mini-Box 3): Modifiers (Punctuation & Numbers) */}
+              <div className={`grid grid-cols-2 items-center gap-1 p-1.5 rounded-2xl bg-zinc-900/95 border border-zinc-800/90 shadow-md shrink-0 h-[42px] ${
+                settings.showVirtualKeyboard ? 'w-full sm:w-[155px]' : 'w-full sm:w-[280px]'
+              }`}>
+                <button
+                  onClick={() => {
+                    if (mode === 'quote') setMode('time');
+                    setPracticeTargetWords(null);
+                    setHasPunctuation(p => !p);
+                    focusInput();
+                  }}
+                  className={`flex items-center justify-center px-2 h-full text-xs font-medium rounded-xl transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
+                    hasPunctuation && mode !== 'quote' && !practiceTargetWords
+                      ? 'bg-zinc-800 text-accent border border-zinc-700 font-semibold shadow-xs'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent'
+                  }`}
+                  title="Toggle punctuation marks"
+                >
+                  @ punct
+                </button>
+                <button
+                  onClick={() => {
+                    if (mode === 'quote') setMode('time');
+                    setPracticeTargetWords(null);
+                    setHasNumbers(n => !n);
+                    focusInput();
+                  }}
+                  className={`flex items-center justify-center px-2 h-full text-xs font-medium rounded-xl transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
+                    hasNumbers && mode !== 'quote' && !practiceTargetWords
+                      ? 'bg-zinc-800 text-accent border border-zinc-700 font-semibold shadow-xs'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent'
+                  }`}
+                  title="Toggle number digits"
+                >
+                  # numbers
+                </button>
+              </div>
 
-              {/* Mini-Box 4: View & Tools Controls */}
-              <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm shrink-0 ml-auto sm:ml-0">
+              {/* Bottom-Right Box (Mini-Box 4): Exact same width & height as Top-Right Box when Keyboard is OFF */}
+              <div className={`grid grid-cols-3 items-center gap-1 p-1.5 rounded-2xl bg-zinc-900/95 border border-zinc-800/90 shadow-md shrink-0 h-[42px] ${
+                settings.showVirtualKeyboard ? 'w-full sm:w-[250px]' : 'w-full sm:w-[280px]'
+              }`}>
                 {/* Virtual Keyboard Toggle */}
                 <button
                   onClick={() => updateSettings({ showVirtualKeyboard: !settings.showVirtualKeyboard })}
-                  className={`p-1.5 rounded-xl border transition-all cursor-pointer touch-manipulation active:scale-95 ${
+                  className={`flex items-center justify-center gap-1.5 px-2 h-full rounded-xl border text-xs font-medium transition-all cursor-pointer touch-manipulation active:scale-95 ${
                     settings.showVirtualKeyboard
-                      ? 'text-accent bg-zinc-800 border-zinc-750 shadow-xs'
+                      ? 'text-accent bg-zinc-800 border-zinc-700 font-semibold shadow-xs'
                       : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border-transparent'
                   }`}
                   title="Toggle visual keyboard"
                 >
-                  <KeyboardIcon className="w-3.5 h-3.5" />
+                  <KeyboardIcon className="w-3.5 h-3.5 shrink-0" />
+                  <span className="text-[11px]">Keyboard</span>
                 </button>
 
                 {/* Focus Mode Toggle */}
                 <button
                   onClick={() => updateSettings({ focusMode: !settings.focusMode })}
-                  className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-xl transition-all cursor-pointer text-xs font-medium border touch-manipulation active:scale-95 ${
+                  className={`flex items-center justify-center gap-1.5 px-2 h-full rounded-xl transition-all cursor-pointer text-xs font-medium border touch-manipulation active:scale-95 ${
                     settings.focusMode
-                      ? 'text-accent bg-zinc-800 border-zinc-750 font-semibold shadow-xs'
+                      ? 'text-accent bg-zinc-800 border-zinc-700 font-semibold shadow-xs'
                       : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border-transparent'
                   }`}
                   title={settings.focusMode ? 'Focus Mode active' : 'Enable Focus Mode'}
                 >
-                  <EyeOff className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline text-[11px]">Focus</span>
+                  <EyeOff className="w-3.5 h-3.5 shrink-0" />
+                  <span className="text-[11px]">Focus</span>
                 </button>
 
                 {/* Quick Restart */}
                 <button
                   onClick={() => resetTest(false)}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent transition-all cursor-pointer touch-manipulation active:scale-95"
+                  className="flex items-center justify-center gap-1.5 px-2 h-full rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent transition-all cursor-pointer touch-manipulation active:scale-95"
                   title="Restart test"
                 >
-                  <RotateCcw className="w-3.5 h-3.5 text-accent" />
+                  <RotateCcw className="w-3.5 h-3.5 text-accent shrink-0" />
                   <span className="text-[11px]">Restart</span>
                 </button>
               </div>
@@ -975,17 +1007,17 @@ export const PracticeView: React.FC = () => {
             </div>
           </div>
 
-          {/* Unified Stage: Typing Box & Keyboard Box matched at exact same width (max-w-4xl) with smooth up/down transition */}
+          {/* Unified Stage: Typing Board & Keyboard Board matched at exact same width AND exact same height when Keyboard is ON */}
           <div className="w-full flex flex-col items-stretch">
-            {/* Centered Distraction-Free Linear Typing Box */}
+            {/* Centered Distraction-Free Linear Typing Board */}
             <div
               onClick={focusInput}
-              className={`relative w-full rounded-2xl sm:rounded-3xl ${
+              className={`relative w-full flex flex-col justify-center rounded-2xl sm:rounded-3xl ${
                 !settings.showVirtualKeyboard
-                  ? 'py-7 sm:py-10 px-4 sm:px-7 md:px-10'
+                  ? 'h-[225px] sm:h-[260px] px-4 sm:px-7 md:px-10'
                   : isSmallDisplay
-                    ? 'py-3.5 sm:py-5 px-3 sm:px-5'
-                    : 'py-5 sm:py-7 px-4 sm:px-6 md:px-8'
+                    ? 'h-[195px] sm:h-[225px] px-3 sm:px-5'
+                    : 'h-[220px] sm:h-[245px] md:h-[265px] px-4 sm:px-6 md:px-8'
               } cursor-pointer select-none bg-zinc-950/90 border transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-2xl backdrop-blur-md group overflow-hidden ${
                 isInputFocused 
                   ? 'border-zinc-800/90 ring-1 ring-zinc-800/60' 
@@ -1043,88 +1075,88 @@ export const PracticeView: React.FC = () => {
                     : 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 82%, transparent 100%)'
                 }}
               >
-              <div
-                ref={wordsWrapperRef}
-                className="w-full flex flex-wrap items-center justify-start content-start transition-transform duration-200 ease-out will-change-transform py-1"
-                style={{
-                  transform: `translate3d(0, -${scrollOffset}px, 0)`
-                }}
-              >
-                {wordsList.map((wordObj) => {
-                  const isCurrentWord = wordObj.wordIndex === currentWordIndex;
+                <div
+                  ref={wordsWrapperRef}
+                  className="w-full flex flex-wrap items-center justify-start content-start transition-transform duration-200 ease-out will-change-transform py-1"
+                  style={{
+                    transform: `translate3d(0, -${scrollOffset}px, 0)`
+                  }}
+                >
+                  {wordsList.map((wordObj) => {
+                    const isCurrentWord = wordObj.wordIndex === currentWordIndex;
 
-                  return (
-                    <span
-                      key={wordObj.wordIndex}
-                      ref={isCurrentWord ? activeWordRef : null}
-                      data-word-idx={wordObj.wordIndex}
-                      className={`inline-flex items-center whitespace-nowrap mr-[0.38em] my-[0.1em] transition-opacity duration-150 ${
-                        isCurrentWord ? 'opacity-100' : 'opacity-50'
-                      }`}
-                    >
-                      {wordObj.letters.map((letter) => {
-                        const isTyped = letter.index < typedText.length;
-                        const isCurrent = letter.index === typedText.length;
-                        const isCorrect = isTyped && typedText[letter.index] === letter.char;
-                        const isIncorrect = isTyped && !isCorrect;
+                    return (
+                      <span
+                        key={wordObj.wordIndex}
+                        ref={isCurrentWord ? activeWordRef : null}
+                        data-word-idx={wordObj.wordIndex}
+                        className={`inline-flex items-center whitespace-nowrap mr-[0.38em] my-[0.1em] transition-opacity duration-150 ${
+                          isCurrentWord ? 'opacity-100' : 'opacity-50'
+                        }`}
+                      >
+                        {wordObj.letters.map((letter) => {
+                          const isTyped = letter.index < typedText.length;
+                          const isCurrent = letter.index === typedText.length;
+                          const isCorrect = isTyped && typedText[letter.index] === letter.char;
+                          const isIncorrect = isTyped && !isCorrect;
 
-                        return (
-                          <span
-                            key={letter.index}
-                            ref={isCurrent ? activeCharRef : null}
-                            className={`relative inline-block transition-colors duration-75 ${
-                              isCorrect
-                                ? 'text-zinc-100 font-medium'
-                                : isIncorrect
-                                  ? settings.highlightErrors
-                                    ? 'text-rose-400 bg-rose-500/15 rounded-xs font-medium'
-                                    : 'text-rose-400 font-medium'
-                                  : isCurrent && settings.caretStyle === 'block'
-                                    ? 'text-zinc-950 font-bold relative z-10'
-                                    : 'text-zinc-500'
-                            }`}
-                          >
-                            {/* Render active caret before current untyped character */}
-                            {isCurrent && (
-                              <span className={`absolute ${caretClasses}`} />
-                            )}
+                          return (
+                            <span
+                              key={letter.index}
+                              ref={isCurrent ? activeCharRef : null}
+                              className={`relative inline-block transition-colors duration-75 ${
+                                isCorrect
+                                  ? 'text-zinc-100 font-medium'
+                                  : isIncorrect
+                                    ? settings.highlightErrors
+                                      ? 'text-rose-400 bg-rose-500/15 rounded-xs font-medium'
+                                      : 'text-rose-400 font-medium'
+                                    : isCurrent && settings.caretStyle === 'block'
+                                      ? 'text-zinc-950 font-bold relative z-10'
+                                      : 'text-zinc-500'
+                              }`}
+                            >
+                              {/* Render active caret before current untyped character */}
+                              {isCurrent && (
+                                <span className={`absolute ${caretClasses}`} />
+                              )}
 
-                            {letter.char}
-                          </span>
-                        );
-                      })}
+                              {letter.char}
+                            </span>
+                          );
+                        })}
 
-                      {/* Trailing space after word */}
-                      {wordObj.hasSpace && (() => {
-                        const isSpaceCurrent = wordObj.spaceIndex === typedText.length;
-                        return (
-                          <span
-                            ref={isSpaceCurrent ? activeCharRef : null}
-                            className="relative inline-block w-[0.25em]"
-                          >
-                            {isSpaceCurrent && (
-                              <span className={`absolute ${settings.caretStyle === 'block' ? 'inset-0 w-[0.55em] -left-[1px] bg-accent/85 rounded-xs animate-caret-pulse z-0 pointer-events-none shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]' : caretClasses}`} />
-                            )}
-                            &nbsp;
-                          </span>
-                        );
-                      })()}
+                        {/* Trailing space after word */}
+                        {wordObj.hasSpace && (() => {
+                          const isSpaceCurrent = wordObj.spaceIndex === typedText.length;
+                          return (
+                            <span
+                              ref={isSpaceCurrent ? activeCharRef : null}
+                              className="relative inline-block w-[0.25em]"
+                            >
+                              {isSpaceCurrent && (
+                                <span className={`absolute ${settings.caretStyle === 'block' ? 'inset-0 w-[0.55em] -left-[1px] bg-accent/85 rounded-xs animate-caret-pulse z-0 pointer-events-none shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]' : caretClasses}`} />
+                              )}
+                              &nbsp;
+                            </span>
+                          );
+                        })()}
+                      </span>
+                    );
+                  })}
+
+                  {/* Trailing caret if end reached on current test */}
+                  {typedText.length >= targetText.length && (
+                    <span className="relative inline-block w-[2px] h-[1em]">
+                      <span className={`absolute ${caretClasses}`} />
                     </span>
-                  );
-                })}
-
-                {/* Trailing caret if end reached on current test */}
-                {typedText.length >= targetText.length && (
-                  <span className="relative inline-block w-[2px] h-[1em]">
-                    <span className={`absolute ${caretClasses}`} />
-                  </span>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
 
               {/* Author Attribution for Quote Mode */}
               {activeQuote && (
-                <div className="mt-2 pt-2 border-t border-zinc-100 dark:border-zinc-800/60 text-right">
+                <div className="mt-1.5 pt-1.5 border-t border-zinc-100 dark:border-zinc-800/60 text-right">
                   <span className="text-xs italic text-zinc-400">— {activeQuote.author}</span>
                 </div>
               )}
@@ -1139,25 +1171,33 @@ export const PracticeView: React.FC = () => {
               )}
             </div>
 
-            {/* Interactive Virtual Keyboard Box — Smoothly expands/collapses so typing board glides up & down */}
+            {/* Interactive Virtual Keyboard Board — Exact same width AND height as Typing Board when Keyboard is ON */}
             <div
               aria-hidden={!settings.showVirtualKeyboard}
               className={`w-full grid transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                 settings.showVirtualKeyboard
-                  ? 'grid-rows-[1fr] opacity-100 translate-y-0 mt-2.5 sm:mt-3.5'
+                  ? 'grid-rows-[1fr] opacity-100 translate-y-0 mt-2.5 sm:mt-3'
                   : 'grid-rows-[0fr] opacity-0 -translate-y-2 pointer-events-none mt-0'
               }`}
             >
               <div className="overflow-hidden min-h-0">
-                <VirtualKeyboard
-                  expectedKey={currentExpectedChar}
-                  activeKeyPressed={lastKeyPressed}
-                  compact={isSmallDisplay}
-                  onKeyPress={(char) => {
-                    focusInput();
-                    processTypedChar(char);
-                  }}
-                />
+                <div
+                  className={`w-full ${
+                    isSmallDisplay
+                      ? 'h-[195px] sm:h-[225px]'
+                      : 'h-[220px] sm:h-[245px] md:h-[265px]'
+                  }`}
+                >
+                  <VirtualKeyboard
+                    expectedKey={currentExpectedChar}
+                    activeKeyPressed={lastKeyPressed}
+                    compact={isSmallDisplay}
+                    onKeyPress={(char) => {
+                      focusInput();
+                      processTypedChar(char);
+                    }}
+                  />
+                </div>
               </div>
             </div>
 

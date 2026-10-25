@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Hand, Eye } from 'lucide-react';
+import { Hand, Eye, Sparkles } from 'lucide-react';
 
 export type FingerId =
   | 'left-pinky'
@@ -11,6 +11,8 @@ export type FingerId =
   | 'right-middle'
   | 'right-ring'
   | 'right-pinky';
+
+export type HandVisualStyle = 'cyber' | 'realistic' | 'color';
 
 interface FingerMeta {
   id: FingerId;
@@ -34,8 +36,8 @@ export const FINGER_METADATA: Record<FingerId, FingerMeta> = {
     shortLabel: 'L · Pinky',
     fingerOnly: 'Pinky',
     colorHex: '#f43f5e',
-    bgTint: 'rgba(244, 63, 94, 0.14)',
-    borderTint: 'rgba(244, 63, 94, 0.45)',
+    bgTint: 'rgba(244, 63, 94, 0.16)',
+    borderTint: 'rgba(244, 63, 94, 0.5)',
     textClass: 'text-rose-400',
     badgeBg: 'bg-rose-500/20 border-rose-500/40 text-rose-300',
     barClass: 'bg-rose-500'
@@ -47,8 +49,8 @@ export const FINGER_METADATA: Record<FingerId, FingerMeta> = {
     shortLabel: 'L · Ring',
     fingerOnly: 'Ring',
     colorHex: '#f59e0b',
-    bgTint: 'rgba(245, 158, 11, 0.14)',
-    borderTint: 'rgba(245, 158, 11, 0.45)',
+    bgTint: 'rgba(245, 158, 11, 0.16)',
+    borderTint: 'rgba(245, 158, 11, 0.5)',
     textClass: 'text-amber-400',
     badgeBg: 'bg-amber-500/20 border-amber-500/40 text-amber-300',
     barClass: 'bg-amber-500'
@@ -60,8 +62,8 @@ export const FINGER_METADATA: Record<FingerId, FingerMeta> = {
     shortLabel: 'L · Middle',
     fingerOnly: 'Middle',
     colorHex: '#10b981',
-    bgTint: 'rgba(16, 185, 129, 0.14)',
-    borderTint: 'rgba(16, 185, 129, 0.45)',
+    bgTint: 'rgba(16, 185, 129, 0.16)',
+    borderTint: 'rgba(16, 185, 129, 0.5)',
     textClass: 'text-emerald-400',
     badgeBg: 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300',
     barClass: 'bg-emerald-500'
@@ -73,8 +75,8 @@ export const FINGER_METADATA: Record<FingerId, FingerMeta> = {
     shortLabel: 'L · Index',
     fingerOnly: 'Index',
     colorHex: '#38bdf8',
-    bgTint: 'rgba(56, 189, 248, 0.15)',
-    borderTint: 'rgba(56, 189, 248, 0.45)',
+    bgTint: 'rgba(56, 189, 248, 0.16)',
+    borderTint: 'rgba(56, 189, 248, 0.5)',
     textClass: 'text-sky-400',
     badgeBg: 'bg-sky-500/20 border-sky-500/40 text-sky-300',
     barClass: 'bg-sky-400'
@@ -86,8 +88,8 @@ export const FINGER_METADATA: Record<FingerId, FingerMeta> = {
     shortLabel: 'Thumb',
     fingerOnly: 'Thumb',
     colorHex: '#a855f7',
-    bgTint: 'rgba(168, 85, 247, 0.15)',
-    borderTint: 'rgba(168, 85, 247, 0.45)',
+    bgTint: 'rgba(168, 85, 247, 0.16)',
+    borderTint: 'rgba(168, 85, 247, 0.5)',
     textClass: 'text-purple-400',
     badgeBg: 'bg-purple-500/20 border-purple-500/40 text-purple-300',
     barClass: 'bg-purple-500'
@@ -99,8 +101,8 @@ export const FINGER_METADATA: Record<FingerId, FingerMeta> = {
     shortLabel: 'R · Index',
     fingerOnly: 'Index',
     colorHex: '#818cf8',
-    bgTint: 'rgba(129, 140, 248, 0.15)',
-    borderTint: 'rgba(129, 140, 248, 0.45)',
+    bgTint: 'rgba(129, 140, 248, 0.16)',
+    borderTint: 'rgba(129, 140, 248, 0.5)',
     textClass: 'text-indigo-400',
     badgeBg: 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300',
     barClass: 'bg-indigo-400'
@@ -112,8 +114,8 @@ export const FINGER_METADATA: Record<FingerId, FingerMeta> = {
     shortLabel: 'R · Middle',
     fingerOnly: 'Middle',
     colorHex: '#10b981',
-    bgTint: 'rgba(16, 185, 129, 0.14)',
-    borderTint: 'rgba(16, 185, 129, 0.45)',
+    bgTint: 'rgba(16, 185, 129, 0.16)',
+    borderTint: 'rgba(16, 185, 129, 0.5)',
     textClass: 'text-emerald-400',
     badgeBg: 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300',
     barClass: 'bg-emerald-500'
@@ -125,8 +127,8 @@ export const FINGER_METADATA: Record<FingerId, FingerMeta> = {
     shortLabel: 'R · Ring',
     fingerOnly: 'Ring',
     colorHex: '#f59e0b',
-    bgTint: 'rgba(245, 158, 11, 0.14)',
-    borderTint: 'rgba(245, 158, 11, 0.45)',
+    bgTint: 'rgba(245, 158, 11, 0.16)',
+    borderTint: 'rgba(245, 158, 11, 0.5)',
     textClass: 'text-amber-400',
     badgeBg: 'bg-amber-500/20 border-amber-500/40 text-amber-300',
     barClass: 'bg-amber-500'
@@ -138,8 +140,8 @@ export const FINGER_METADATA: Record<FingerId, FingerMeta> = {
     shortLabel: 'R · Pinky',
     fingerOnly: 'Pinky',
     colorHex: '#f43f5e',
-    bgTint: 'rgba(244, 63, 94, 0.14)',
-    borderTint: 'rgba(244, 63, 94, 0.45)',
+    bgTint: 'rgba(244, 63, 94, 0.16)',
+    borderTint: 'rgba(244, 63, 94, 0.5)',
     textClass: 'text-rose-400',
     badgeBg: 'bg-rose-500/20 border-rose-500/40 text-rose-300',
     barClass: 'bg-rose-500'
@@ -269,12 +271,12 @@ const SYMBOL_BASE_KEY_MAP: Record<string, string> = {
   '<': ',', '>': '.', '?': '/'
 };
 
-// Anatomical 10-Finger Overlay Definitions (Knuckle Base -> Resting Home Row Key)
+// Anatomical 10-Finger Overlay Definitions (Connected directly to Left & Right Palms)
 interface VisualFingerSpec {
   visualId: string;
   fingerId: FingerId;
   hand: 'left' | 'right';
-  label: string;
+  shortTag: string;
   knuckleX: number;
   knuckleY: number;
   homeX: number;
@@ -289,128 +291,128 @@ const VISUAL_FINGERS: VisualFingerSpec[] = [
     visualId: 'left-pinky',
     fingerId: 'left-pinky',
     hand: 'left',
-    label: 'L-Pinky',
-    knuckleX: 215,
-    knuckleY: 435,
+    shortTag: 'L5',
+    knuckleX: 230,
+    knuckleY: 382,
     homeX: KEY_COORDS['a'].cx,
-    homeY: KEY_COORDS['a'].cy + 6,
-    baseRadius: 23,
-    tipRadius: 18
+    homeY: KEY_COORDS['a'].cy + 4,
+    baseRadius: 26,
+    tipRadius: 20
   },
   {
     visualId: 'left-ring',
     fingerId: 'left-ring',
     hand: 'left',
-    label: 'L-Ring',
-    knuckleX: 315,
-    knuckleY: 422,
+    shortTag: 'L4',
+    knuckleX: 325,
+    knuckleY: 364,
     homeX: KEY_COORDS['s'].cx,
-    homeY: KEY_COORDS['s'].cy + 4,
-    baseRadius: 25,
-    tipRadius: 20
+    homeY: KEY_COORDS['s'].cy + 2,
+    baseRadius: 28,
+    tipRadius: 22
   },
   {
     visualId: 'left-middle',
     fingerId: 'left-middle',
     hand: 'left',
-    label: 'L-Middle',
-    knuckleX: 422,
-    knuckleY: 416,
+    shortTag: 'L3',
+    knuckleX: 425,
+    knuckleY: 356,
     homeX: KEY_COORDS['d'].cx,
-    homeY: KEY_COORDS['d'].cy + 2,
-    baseRadius: 26,
-    tipRadius: 21
+    homeY: KEY_COORDS['d'].cy,
+    baseRadius: 29,
+    tipRadius: 23
   },
   {
     visualId: 'left-index',
     fingerId: 'left-index',
     hand: 'left',
-    label: 'L-Index',
-    knuckleX: 528,
-    knuckleY: 425,
+    shortTag: 'L2',
+    knuckleX: 525,
+    knuckleY: 366,
     homeX: KEY_COORDS['f'].cx,
-    homeY: KEY_COORDS['f'].cy + 4,
-    baseRadius: 26,
-    tipRadius: 21
+    homeY: KEY_COORDS['f'].cy + 2,
+    baseRadius: 29,
+    tipRadius: 23
   },
   {
     visualId: 'left-thumb',
     fingerId: 'thumbs',
     hand: 'left',
-    label: 'L-Thumb',
-    knuckleX: 590,
-    knuckleY: 492,
+    shortTag: 'LT',
+    knuckleX: 565,
+    knuckleY: 448,
     homeX: 655,
-    homeY: 452,
-    baseRadius: 28,
-    tipRadius: 22
+    homeY: 446,
+    baseRadius: 31,
+    tipRadius: 24
   },
   // Right Hand (Thumb -> Pinky)
   {
     visualId: 'right-thumb',
     fingerId: 'thumbs',
     hand: 'right',
-    label: 'R-Thumb',
-    knuckleX: 910,
-    knuckleY: 492,
+    shortTag: 'RT',
+    knuckleX: 935,
+    knuckleY: 448,
     homeX: 845,
-    homeY: 452,
-    baseRadius: 28,
-    tipRadius: 22
+    homeY: 446,
+    baseRadius: 31,
+    tipRadius: 24
   },
   {
     visualId: 'right-index',
     fingerId: 'right-index',
     hand: 'right',
-    label: 'R-Index',
-    knuckleX: 972,
-    knuckleY: 425,
+    shortTag: 'R2',
+    knuckleX: 955,
+    knuckleY: 366,
     homeX: KEY_COORDS['j'].cx,
-    homeY: KEY_COORDS['j'].cy + 4,
-    baseRadius: 26,
-    tipRadius: 21
+    homeY: KEY_COORDS['j'].cy + 2,
+    baseRadius: 29,
+    tipRadius: 23
   },
   {
     visualId: 'right-middle',
     fingerId: 'right-middle',
     hand: 'right',
-    label: 'R-Middle',
-    knuckleX: 1078,
-    knuckleY: 416,
+    shortTag: 'R3',
+    knuckleX: 1055,
+    knuckleY: 356,
     homeX: KEY_COORDS['k'].cx,
-    homeY: KEY_COORDS['k'].cy + 2,
-    baseRadius: 26,
-    tipRadius: 21
+    homeY: KEY_COORDS['k'].cy,
+    baseRadius: 29,
+    tipRadius: 23
   },
   {
     visualId: 'right-ring',
     fingerId: 'right-ring',
     hand: 'right',
-    label: 'R-Ring',
-    knuckleX: 1185,
-    knuckleY: 422,
+    shortTag: 'R4',
+    knuckleX: 1155,
+    knuckleY: 364,
     homeX: KEY_COORDS['l'].cx,
-    homeY: KEY_COORDS['l'].cy + 4,
-    baseRadius: 25,
-    tipRadius: 20
+    homeY: KEY_COORDS['l'].cy + 2,
+    baseRadius: 28,
+    tipRadius: 22
   },
   {
     visualId: 'right-pinky',
     fingerId: 'right-pinky',
     hand: 'right',
-    label: 'R-Pinky',
-    knuckleX: 1285,
-    knuckleY: 435,
+    shortTag: 'R5',
+    knuckleX: 1250,
+    knuckleY: 382,
     homeX: KEY_COORDS[';'].cx,
-    homeY: KEY_COORDS[';'].cy + 6,
-    baseRadius: 23,
-    tipRadius: 18
+    homeY: KEY_COORDS[';'].cy + 4,
+    baseRadius: 26,
+    tipRadius: 20
   }
 ];
 
 /**
- * Computes an anatomical tapered finger path, joint creases, and fingernail geometry
- * from knuckle (kx, ky) to fingertip target (tx, ty).
+ * Computes an articulated 3-segment finger silhouette, knuckle creases, tendon bone line,
+ * and fingernail geometry from knuckle (kx, ky) to fingertip target (tx, ty).
  */
 function buildFingerGeometry(
   kx: number,
@@ -422,7 +424,7 @@ function buildFingerGeometry(
 ) {
   const dx = tx - kx;
   const dy = ty - ky;
-  const len = Math.max(20, Math.hypot(dx, dy));
+  const len = Math.max(24, Math.hypot(dx, dy));
   const ux = dx / len;
   const uy = dy / len;
   // Perpendicular unit vector
@@ -435,10 +437,10 @@ function buildFingerGeometry(
   const bRx = kx - px * baseR;
   const bRy = ky - py * baseR;
 
-  // Mid-knuckle slight curve for natural organic contour
-  const midX = kx + ux * (len * 0.52);
-  const midY = ky + uy * (len * 0.52);
-  const midR = (baseR + tipR) * 0.52;
+  // Mid-knuckle slight swell for realistic phalanx anatomy
+  const midX = kx + ux * (len * 0.5);
+  const midY = ky + uy * (len * 0.5);
+  const midR = (baseR + tipR) * 0.54;
   const mLx = midX + px * midR;
   const mLy = midY + py * midR;
   const mRx = midX - px * midR;
@@ -450,13 +452,11 @@ function buildFingerGeometry(
   const tRx = tx - px * tipR;
   const tRy = ty - py * tipR;
 
-  // Apex of fingertip slightly past (tx, ty)
-  const apexX = tx + ux * (tipR * 1.15);
-  const apexY = ty + uy * (tipR * 1.15);
-  const capCtrlLx = tLx + ux * (tipR * 1.1);
-  const capCtrlLy = tLy + uy * (tipR * 1.1);
-  const capCtrlRx = tRx + ux * (tipR * 1.1);
-  const capCtrlRy = tRy + uy * (tipR * 1.1);
+  // Rounded fingertip cap control points
+  const capCtrlLx = tLx + ux * (tipR * 1.25);
+  const capCtrlLy = tLy + uy * (tipR * 1.25);
+  const capCtrlRx = tRx + ux * (tipR * 1.25);
+  const capCtrlRy = tRy + uy * (tipR * 1.25);
 
   const bodyPath = [
     `M ${bLx.toFixed(1)} ${bLy.toFixed(1)}`,
@@ -466,19 +466,22 @@ function buildFingerGeometry(
     'Z'
   ].join(' ');
 
-  // Two subtle knuckle joint crease lines along the finger
-  const j1Center = { x: kx + ux * (len * 0.38), y: ky + uy * (len * 0.38) };
+  // Two knuckle joint crease lines along the finger
+  const j1Center = { x: kx + ux * (len * 0.36), y: ky + uy * (len * 0.36) };
   const j2Center = { x: kx + ux * (len * 0.68), y: ky + uy * (len * 0.68) };
-  const j1Half = midR * 0.55;
-  const j2Half = tipR * 0.55;
+  const j1Half = midR * 0.62;
+  const j2Half = tipR * 0.62;
 
-  const crease1 = `M ${(j1Center.x + px * j1Half).toFixed(1)} ${(j1Center.y + py * j1Half).toFixed(1)} Q ${(j1Center.x - ux * 3).toFixed(1)} ${(j1Center.y - uy * 3).toFixed(1)} ${(j1Center.x - px * j1Half).toFixed(1)} ${(j1Center.y - py * j1Half).toFixed(1)}`;
-  const crease2 = `M ${(j2Center.x + px * j2Half).toFixed(1)} ${(j2Center.y + py * j2Half).toFixed(1)} Q ${(j2Center.x - ux * 2.5).toFixed(1)} ${(j2Center.y - uy * 2.5).toFixed(1)} ${(j2Center.x - px * j2Half).toFixed(1)} ${(j2Center.y - py * j2Half).toFixed(1)}`;
+  const crease1 = `M ${(j1Center.x + px * j1Half).toFixed(1)} ${(j1Center.y + py * j1Half).toFixed(1)} Q ${(j1Center.x - ux * 3.5).toFixed(1)} ${(j1Center.y - uy * 3.5).toFixed(1)} ${(j1Center.x - px * j1Half).toFixed(1)} ${(j1Center.y - py * j1Half).toFixed(1)}`;
+  const crease2 = `M ${(j2Center.x + px * j2Half).toFixed(1)} ${(j2Center.y + py * j2Half).toFixed(1)} Q ${(j2Center.x - ux * 3).toFixed(1)} ${(j2Center.y - uy * 3).toFixed(1)} ${(j2Center.x - px * j2Half).toFixed(1)} ${(j2Center.y - py * j2Half).toFixed(1)}`;
+
+  // Centerline bone/tendon guide from knuckle to joint
+  const boneLine = `M ${kx.toFixed(1)} ${ky.toFixed(1)} L ${(kx + ux * (len * 0.78)).toFixed(1)} ${(ky + uy * (len * 0.78)).toFixed(1)}`;
 
   // Rotation angle in degrees for fingernail alignment
   const angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI + 90;
 
-  return { bodyPath, crease1, crease2, angleDeg };
+  return { bodyPath, crease1, crease2, boneLine, j1Center, j2Center, angleDeg };
 }
 
 interface VirtualKeyboardProps {
@@ -497,6 +500,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
   onKeyPress
 }) => {
   const [showHandsOverlay, setShowHandsOverlay] = useState<boolean>(true);
+  const [handStyle, setHandStyle] = useState<HandVisualStyle>('cyber');
   const [showZoneColors, setShowZoneColors] = useState<boolean>(highlightFingers);
 
   // Normalize expected key
@@ -560,6 +564,14 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
     if (normalizedExpected === ' ') return 'Spacebar (␣)';
     return `"${normalizedExpected}"`;
   }, [normalizedExpected]);
+
+  const cycleHandStyle = () => {
+    setHandStyle(prev => {
+      if (prev === 'cyber') return 'realistic';
+      if (prev === 'realistic') return 'color';
+      return 'cyber';
+    });
+  };
 
   return (
     <div className="w-full select-none">
@@ -641,8 +653,22 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
             )}
           </div>
 
-          {/* Right: Controls for Translucent Real Hands Overlay & Zone Colors */}
+          {/* Right: Controls for Hand Style, Hands Visibility & Zone Colors */}
           <div className="flex items-center gap-1.5 ml-auto">
+            {showHandsOverlay && (
+              <button
+                type="button"
+                onClick={cycleHandStyle}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border bg-zinc-900/90 text-zinc-200 border-zinc-700/80 hover:border-zinc-600 text-[10px] sm:text-[11px] font-medium transition-all cursor-pointer shrink-0"
+                title="Switch hand visual style (Cyber Glow / Realistic Skin / Color-Coded)"
+              >
+                <Sparkles className="w-3 h-3 text-accent" />
+                <span className="capitalize">
+                  Style: {handStyle === 'cyber' ? 'Neon' : handStyle === 'realistic' ? 'Skin' : 'Color'}
+                </span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => setShowHandsOverlay(v => !v)}
@@ -651,7 +677,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
                   ? 'bg-zinc-800 text-zinc-100 border-zinc-700 shadow-2xs'
                   : 'bg-zinc-900/60 text-zinc-400 border-zinc-800 hover:text-zinc-200'
               }`}
-              title="Toggle translucent real hands & finger overlay on keyboard"
+              title="Toggle translucent hands & finger overlay on keyboard"
             >
               <Hand className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent" />
               <span>Hands</span>
@@ -673,8 +699,8 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
           </div>
         </div>
 
-        {/* Keyboard Stage with Translucent Real Finger & Hand Overlay */}
-        <div className="relative w-full">
+        {/* Keyboard Stage with High-Visibility Translucent Hands & Reaching Fingers Overlay */}
+        <div className="relative w-full pb-2 sm:pb-3">
           {/* Proportional 5-Row Keyboard Grid */}
           <div className="w-full flex flex-col gap-1 sm:gap-1.5 relative z-10">
             {KEYBOARD_ROWS.map((row, rIdx) => (
@@ -723,14 +749,14 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
                               backgroundColor: fingerMeta.colorHex,
                               color: '#09090b',
                               borderColor: '#ffffff',
-                              boxShadow: `0 0 16px ${fingerMeta.colorHex}`
+                              boxShadow: `0 0 18px ${fingerMeta.colorHex}`
                             }
                           : isExpected
                             ? {
                                 borderColor: fingerMeta.colorHex,
                                 backgroundColor: fingerMeta.bgTint,
                                 color: '#ffffff',
-                                boxShadow: `0 0 14px ${fingerMeta.borderTint}, inset 0 0 8px ${fingerMeta.bgTint}`
+                                boxShadow: `0 0 16px ${fingerMeta.borderTint}, inset 0 0 10px ${fingerMeta.bgTint}`
                               }
                             : showZoneColors
                               ? {
@@ -752,7 +778,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
                           isPressed
                             ? 'translate-y-[1px] font-extrabold ring-2 ring-white z-10'
                             : isExpected
-                              ? 'border-2 font-bold ring-1 ring-white/40 z-10'
+                              ? 'border-2 font-bold ring-1 ring-white/50 z-10'
                               : 'bg-zinc-900/95 border border-zinc-800/90 text-zinc-300 shadow-[0_2px_0_rgba(0,0,0,0.55)]'
                         }
                       `}
@@ -761,7 +787,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
                       {k.sub && (
                         <span
                           className={`text-[7px] sm:text-[9px] leading-none mb-0.5 ${
-                            isExpected ? 'text-white/90 font-bold' : 'text-zinc-500'
+                            isExpected ? 'text-white/95 font-bold' : 'text-zinc-500'
                           }`}
                         >
                           {k.sub}
@@ -773,7 +799,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
                         <span
                           className={`leading-none font-mono ${
                             isExpected
-                              ? 'text-[11px] sm:text-xs md:text-sm font-extrabold text-white'
+                              ? 'text-[11px] sm:text-xs md:text-sm font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]'
                               : 'text-[10px] sm:text-xs md:text-[13px]'
                           }`}
                         >
@@ -785,7 +811,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
                             isPressed
                               ? 'text-zinc-950 font-bold'
                               : isExpected
-                                ? 'text-white font-bold'
+                                ? 'text-white font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]'
                                 : 'text-zinc-400'
                           }`}
                         >
@@ -826,31 +852,132 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
             ))}
           </div>
 
-          {/* Translucent Real Hands & Reaching Fingers SVG Overlay (Low opacity so keys remain 100% readable) */}
+          {/* High-Visibility Sculpted Hands & Articulated Fingers Overlay */}
           {showHandsOverlay && (
             <svg
-              viewBox="0 0 1500 500"
+              viewBox="0 0 1500 520"
               preserveAspectRatio="none"
               className="absolute inset-0 w-full h-full pointer-events-none z-20 overflow-visible"
               aria-hidden="true"
             >
-              {/* Left Palm Silhouette (Low Opacity) */}
-              <path
-                d="M 192 435 C 215 398, 535 400, 560 432 C 588 455, 620 480, 610 515 L 220 515 C 198 492, 185 462, 192 435 Z"
-                fill="rgba(228, 228, 231, 0.08)"
-                stroke="rgba(228, 228, 231, 0.22)"
-                strokeWidth="2"
-              />
+              <defs>
+                {/* Glow filter for active reaching fingers */}
+                <filter id="activeFingerGlow" x="-25%" y="-25%" width="150%" height="150%">
+                  <feDropShadow dx="0" dy="2" stdDeviation="6" floodColor="#ffffff" floodOpacity="0.35" />
+                </filter>
 
-              {/* Right Palm Silhouette (Low Opacity) */}
-              <path
-                d="M 1308 435 C 1285 398, 965 400, 940 432 C 912 455, 880 480, 890 515 L 1280 515 C 1302 492, 1315 462, 1308 435 Z"
-                fill="rgba(228, 228, 231, 0.08)"
-                stroke="rgba(228, 228, 231, 0.22)"
-                strokeWidth="2"
-              />
+                {/* Cyber Holographic Palm Gradient */}
+                <linearGradient id="palmGradCyber" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.28" />
+                  <stop offset="60%" stopColor="#6366f1" stopOpacity="0.24" />
+                  <stop offset="100%" stopColor="#1e1b4b" stopOpacity="0.35" />
+                </linearGradient>
 
-              {/* Render all 10 realistic fingers (resting fingers at low opacity, active reaching finger highlighted with translucent fill + fingernail) */}
+                {/* Realistic Warm Skin Palm Gradient */}
+                <linearGradient id="palmGradRealistic" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#fdba74" stopOpacity="0.36" />
+                  <stop offset="65%" stopColor="#f97316" stopOpacity="0.28" />
+                  <stop offset="100%" stopColor="#ea580c" stopOpacity="0.32" />
+                </linearGradient>
+
+                {/* Color-Coded Tutor Palm Gradient */}
+                <linearGradient id="palmGradColor" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#a1a1aa" stopOpacity="0.28" />
+                  <stop offset="100%" stopColor="#52525b" stopOpacity="0.36" />
+                </linearGradient>
+              </defs>
+
+              {/* LEFT HAND FULL CONTIGUOUS PALM & WRIST */}
+              <g>
+                <path
+                  d="M 200 382 C 215 352, 535 348, 560 375 C 580 398, 595 435, 595 462 C 585 488, 555 512, 530 520 L 235 520 C 208 502, 190 435, 200 382 Z"
+                  fill={
+                    handStyle === 'cyber'
+                      ? 'url(#palmGradCyber)'
+                      : handStyle === 'realistic'
+                        ? 'url(#palmGradRealistic)'
+                        : 'url(#palmGradColor)'
+                  }
+                  stroke={
+                    handStyle === 'cyber'
+                      ? '#38bdf8'
+                      : handStyle === 'realistic'
+                        ? '#fed7aa'
+                        : '#d4d4d8'
+                  }
+                  strokeOpacity={0.65}
+                  strokeWidth="2.8"
+                />
+                {/* Left Palm Anatomical Tendon & Life Lines */}
+                <path
+                  d="M 285 495 Q 375 430 520 422 M 245 450 Q 355 412 450 385"
+                  fill="none"
+                  stroke={handStyle === 'realistic' ? '#ffedd5' : '#bae6fd'}
+                  strokeOpacity={0.35}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                {/* Left Hand Label */}
+                <text
+                  x="380"
+                  y="498"
+                  textAnchor="middle"
+                  fill="#ffffff"
+                  fillOpacity="0.55"
+                  fontSize="18"
+                  fontWeight="700"
+                  letterSpacing="2"
+                >
+                  LEFT HAND
+                </text>
+              </g>
+
+              {/* RIGHT HAND FULL CONTIGUOUS PALM & WRIST */}
+              <g>
+                <path
+                  d="M 1280 382 C 1265 352, 945 348, 920 375 C 900 398, 885 435, 885 462 C 895 488, 925 512, 950 520 L 1245 520 C 1272 502, 1290 435, 1280 382 Z"
+                  fill={
+                    handStyle === 'cyber'
+                      ? 'url(#palmGradCyber)'
+                      : handStyle === 'realistic'
+                        ? 'url(#palmGradRealistic)'
+                        : 'url(#palmGradColor)'
+                  }
+                  stroke={
+                    handStyle === 'cyber'
+                      ? '#818cf8'
+                      : handStyle === 'realistic'
+                        ? '#fed7aa'
+                        : '#d4d4d8'
+                  }
+                  strokeOpacity={0.65}
+                  strokeWidth="2.8"
+                />
+                {/* Right Palm Anatomical Tendon & Life Lines */}
+                <path
+                  d="M 1195 495 Q 1105 430 960 422 M 1235 450 Q 1125 412 1030 385"
+                  fill="none"
+                  stroke={handStyle === 'realistic' ? '#ffedd5' : '#c7d2fe'}
+                  strokeOpacity={0.35}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                {/* Right Hand Label */}
+                <text
+                  x="1100"
+                  y="498"
+                  textAnchor="middle"
+                  fill="#ffffff"
+                  fillOpacity="0.55"
+                  fontSize="18"
+                  fontWeight="700"
+                  letterSpacing="2"
+                >
+                  RIGHT HAND
+                </text>
+              </g>
+
+              {/* ALL 10 ARTICULATED FINGERS */}
               {VISUAL_FINGERS.map((vf) => {
                 const meta = FINGER_METADATA[vf.fingerId];
 
@@ -861,11 +988,10 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
 
                 if (targetKeyCoord && targetKeyDef) {
                   if (targetKeyDef.id === ' ') {
-                    // Use Right Thumb for Spacebar (standard touch-typing convention)
                     if (vf.visualId === 'right-thumb') {
                       isTargetFinger = true;
                       tx = 815;
-                      ty = 450;
+                      ty = 445;
                     }
                   } else if (targetKeyDef.finger === vf.fingerId) {
                     isTargetFinger = true;
@@ -889,7 +1015,13 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
 
                 const isActive = isTargetFinger || isShiftFinger;
 
-                const { bodyPath, crease1, crease2, angleDeg } = buildFingerGeometry(
+                const {
+                  bodyPath,
+                  crease1,
+                  crease2,
+                  boneLine,
+                  angleDeg
+                } = buildFingerGeometry(
                   vf.knuckleX,
                   vf.knuckleY,
                   tx,
@@ -898,69 +1030,161 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
                   vf.tipRadius
                 );
 
+                // Style-specific fill & stroke colors so hands are unmistakably visible
+                const fingerFill = isActive
+                  ? handStyle === 'realistic'
+                    ? '#fb923c'
+                    : meta.colorHex
+                  : handStyle === 'cyber'
+                    ? vf.hand === 'left'
+                      ? '#38bdf8'
+                      : '#818cf8'
+                    : handStyle === 'realistic'
+                      ? '#fdba74'
+                      : meta.colorHex;
+
+                const fingerStroke = isActive
+                  ? '#ffffff'
+                  : handStyle === 'cyber'
+                    ? vf.hand === 'left'
+                      ? '#7dd3fc'
+                      : '#a5b4fc'
+                    : handStyle === 'realistic'
+                      ? '#ffedd5'
+                      : meta.colorHex;
+
+                const fillOpacity = isActive
+                  ? 0.44
+                  : handStyle === 'color'
+                    ? 0.26
+                    : 0.24;
+
+                const strokeOpacity = isActive ? 0.96 : 0.68;
+
                 return (
                   <g
                     key={vf.visualId}
                     className="transition-all duration-150 ease-out"
+                    filter={isActive ? 'url(#activeFingerGlow)' : undefined}
                   >
-                    {/* Target Key Contact Pulse Halo under the active fingertip */}
+                    {/* Active Target Key Spotlight & Crosshair Ring under Fingertip */}
                     {isActive && (
-                      <circle
-                        cx={tx}
-                        cy={ty}
-                        r={vf.tipRadius + 10}
-                        fill={meta.colorHex}
-                        fillOpacity={0.14}
-                        stroke={meta.colorHex}
-                        strokeOpacity={0.5}
-                        strokeWidth="2"
-                        strokeDasharray="5 4"
+                      <>
+                        <circle
+                          cx={tx}
+                          cy={ty}
+                          r={vf.tipRadius + 16}
+                          fill={meta.colorHex}
+                          fillOpacity={0.22}
+                          stroke="#ffffff"
+                          strokeOpacity={0.85}
+                          strokeWidth="2.5"
+                          strokeDasharray="6 4"
+                        />
+                        <circle
+                          cx={tx}
+                          cy={ty}
+                          r={vf.tipRadius + 6}
+                          fill="none"
+                          stroke={meta.colorHex}
+                          strokeOpacity={0.95}
+                          strokeWidth="2.5"
+                        />
+                      </>
+                    )}
+
+                    {/* Articulated Finger Body Silhouette */}
+                    <path
+                      d={bodyPath}
+                      fill={fingerFill}
+                      fillOpacity={fillOpacity}
+                      stroke={fingerStroke}
+                      strokeOpacity={strokeOpacity}
+                      strokeWidth={isActive ? 3.5 : 2.4}
+                    />
+
+                    {/* Subtle Inner Phalanx Bone / Tendon Guide (Cyber style) */}
+                    {handStyle === 'cyber' && (
+                      <path
+                        d={boneLine}
+                        fill="none"
+                        stroke="#ffffff"
+                        strokeOpacity={isActive ? 0.45 : 0.22}
+                        strokeWidth={isActive ? 2.5 : 1.5}
+                        strokeDasharray="4 4"
+                        strokeLinecap="round"
                       />
                     )}
 
-                    {/* Realistic Tapered Finger Body with Low Opacity so key label underneath is clearly visible */}
-                    <path
-                      d={bodyPath}
-                      fill={isActive ? meta.colorHex : '#e4e4e7'}
-                      fillOpacity={isActive ? 0.24 : 0.09}
-                      stroke={isActive ? meta.colorHex : '#a1a1aa'}
-                      strokeOpacity={isActive ? 0.65 : 0.24}
-                      strokeWidth={isActive ? 2.5 : 1.5}
+                    {/* Knuckle Base Joint Ring */}
+                    <circle
+                      cx={vf.knuckleX}
+                      cy={vf.knuckleY}
+                      r={isActive ? 8 : 6}
+                      fill={isActive ? '#ffffff' : fingerStroke}
+                      fillOpacity={isActive ? 0.85 : 0.45}
                     />
 
                     {/* Anatomical Finger Joint Crease Lines */}
                     <path
                       d={crease1}
                       fill="none"
-                      stroke={isActive ? '#ffffff' : '#d4d4d8'}
-                      strokeOpacity={isActive ? 0.35 : 0.16}
-                      strokeWidth="1.5"
+                      stroke="#ffffff"
+                      strokeOpacity={isActive ? 0.65 : 0.35}
+                      strokeWidth="2"
                       strokeLinecap="round"
                     />
                     <path
                       d={crease2}
                       fill="none"
-                      stroke={isActive ? '#ffffff' : '#d4d4d8'}
-                      strokeOpacity={isActive ? 0.35 : 0.16}
-                      strokeWidth="1.5"
+                      stroke="#ffffff"
+                      strokeOpacity={isActive ? 0.65 : 0.35}
+                      strokeWidth="2"
                       strokeLinecap="round"
                     />
 
-                    {/* Realistic Fingernail at the tip of the finger */}
+                    {/* Distinct Fingernail at the Tip */}
                     <g transform={`translate(${tx.toFixed(1)}, ${ty.toFixed(1)}) rotate(${angleDeg.toFixed(1)})`}>
                       <rect
-                        x={-(vf.tipRadius * 0.58)}
-                        y={-(vf.tipRadius * 0.85)}
-                        width={vf.tipRadius * 1.16}
-                        height={vf.tipRadius * 0.95}
-                        rx={vf.tipRadius * 0.48}
-                        fill={isActive ? '#ffffff' : '#f4f4f5'}
-                        fillOpacity={isActive ? 0.26 : 0.12}
-                        stroke={isActive ? '#ffffff' : '#d4d4d8'}
-                        strokeOpacity={isActive ? 0.7 : 0.25}
-                        strokeWidth={isActive ? 1.8 : 1.2}
+                        x={-(vf.tipRadius * 0.62)}
+                        y={-(vf.tipRadius * 0.9)}
+                        width={vf.tipRadius * 1.24}
+                        height={vf.tipRadius * 1.02}
+                        rx={vf.tipRadius * 0.5}
+                        fill="#ffffff"
+                        fillOpacity={isActive ? 0.48 : 0.26}
+                        stroke="#ffffff"
+                        strokeOpacity={isActive ? 0.95 : 0.55}
+                        strokeWidth={isActive ? 2.2 : 1.5}
                       />
                     </g>
+
+                    {/* Active Finger Callout Pill right at the Knuckle so user immediately sees which finger is active */}
+                    {isActive && (
+                      <g transform={`translate(${vf.knuckleX.toFixed(1)}, ${(vf.knuckleY + 18).toFixed(1)})`}>
+                        <rect
+                          x="-44"
+                          y="-13"
+                          width="88"
+                          height="24"
+                          rx="8"
+                          fill="#09090b"
+                          fillOpacity="0.9"
+                          stroke={meta.colorHex}
+                          strokeWidth="2"
+                        />
+                        <text
+                          x="0"
+                          y="3"
+                          textAnchor="middle"
+                          fill="#ffffff"
+                          fontSize="13"
+                          fontWeight="800"
+                        >
+                          {isShiftFinger ? 'HOLD ⇧' : meta.shortLabel.replace(' · ', '-')}
+                        </text>
+                      </g>
+                    )}
                   </g>
                 );
               })}
@@ -970,7 +1194,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
 
         {/* Compact Color Legend Footer inside Keyboard */}
         {showZoneColors && (
-          <div className="mt-2 pt-2 border-t border-zinc-800/60 flex flex-wrap items-center justify-between gap-2 text-[10px] text-zinc-400">
+          <div className="mt-1 pt-2 border-t border-zinc-800/60 flex flex-wrap items-center justify-between gap-2 text-[10px] text-zinc-400">
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <span className="text-zinc-500 font-medium">Finger Guide:</span>
               <span className="inline-flex items-center gap-1">
