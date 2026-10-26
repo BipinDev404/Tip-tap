@@ -1,7 +1,9 @@
+<img width="2288" height="1308" alt="image" src="https://github.com/user-attachments/assets/d84cccba-0a9c-4e5a-bd83-3f97264ef0d4" />
 # Tip tap — Premium Typing Experience
 
 Tip tap is a modern, distraction-free typing practice application built with React, TypeScript, and Vite.  
 It combines speed tests, structured touch-typing lessons, detailed progress analytics, and rich customization in a privacy-first local app.
+<img width="1886" height="1356" alt="image" src="https://github.com/user-attachments/assets/47721262-22b9-446c-afe5-2417cb4e6652" />
 
 ## Features
 
